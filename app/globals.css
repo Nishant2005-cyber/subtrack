@@ -1,0 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base { * { @apply border-stone-200; } body { @apply bg-[#f7f7f3] font-sans text-ink antialiased; } button, a { -webkit-tap-highlight-color: transparent; } }
+@layer components { .card { @apply rounded-2xl border bg-white shadow-card; } .panel-title { @apply text-base font-bold tracking-tight; } .subtle { @apply text-sm text-stone-500; } .pill { @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold; } .field { @apply mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10; } .action { @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition; } }

@@ -1,0 +1,2 @@
+import Link from 'next/link';
+export default function NotFound(){return <main className="grid min-h-screen place-items-center bg-[#f7f7f3] p-6 text-center"><div><p className="font-serif text-6xl">404</p><h1 className="mt-3 text-xl font-bold">We couldn’t find that subscription.</h1><Link href="/dashboard" className="mt-5 inline-block rounded-lg bg-ink px-4 py-2.5 text-sm font-bold text-white">Back to dashboard</Link></div></main>}
