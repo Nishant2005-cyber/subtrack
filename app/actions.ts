@@ -33,7 +33,15 @@ export async function logUsage(subscriptionId: string) {
 export async function setSubscriptionStatus(subscriptionId: string, status: Status) {
   if (!validStatuses.includes(status)) throw new Error('Invalid subscription status.');
   const { supabase } = await currentUser(); const { error } = await supabase.from('subscriptions').update({ status }).eq('id', subscriptionId);
-  if (error) throw new Error(error.message); refreshAll(subscriptionId);
+  if (error) throw new Error(error.message);
+  if (status === 'canceled') {
+    await supabase.from('notifications').update({ acknowledged: true }).eq('subscription_id', subscriptionId).eq('acknowledged', false);
+  }
+  refreshAll(subscriptionId);
+}
+
+export async function cancelSubscription(subscriptionId: string) {
+  return setSubscriptionStatus(subscriptionId, 'canceled');
 }
 
 export async function deleteSubscription(subscriptionId: string) {
