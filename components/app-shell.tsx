@@ -6,7 +6,13 @@ import { Bell, CalendarDays, ChartNoAxesCombined, LayoutDashboard, LogOut, Menu,
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
-const links = [{ href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard }, { href: '/spending', label: 'Spending', icon: ChartNoAxesCombined }, { href: '/calendar', label: 'Calendar', icon: CalendarDays }, { href: '/settings', label: 'Settings', icon: Settings }];
+const links = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/notifications', label: 'Inbox', icon: Bell },
+  { href: '/spending', label: 'Spending', icon: ChartNoAxesCombined },
+  { href: '/calendar', label: 'Calendar', icon: CalendarDays },
+  { href: '/settings', label: 'Settings', icon: Settings }
+];
 export function AppShell({ children, email }: { children: React.ReactNode; email: string | null }) {
   const path = usePathname(); const router = useRouter(); const [open, setOpen] = useState(false);
   const menu = <><div className="mb-10 flex items-center gap-2 px-2 text-2xl font-bold tracking-tight"><span className="grid h-8 w-8 place-items-center rounded-lg bg-lime text-lg text-ink">s</span>SubTrack</div><nav className="grid gap-1">{links.map(({ href,label,icon:Icon})=><Link onClick={()=>setOpen(false)} key={href} href={href} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold ${path === href ? 'bg-white text-ink shadow-sm' : 'text-stone-500 hover:bg-white/60 hover:text-ink'}`}><Icon size={18}/>{label}</Link>)}</nav><div className="mt-auto border-t border-stone-200 pt-5"><div className="mb-3 truncate px-3 text-xs text-stone-500">{email}</div><button onClick={async()=>{await createClient().auth.signOut();router.replace('/login');router.refresh()}} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-stone-500 hover:bg-white hover:text-ink"><LogOut size={18}/>Log out</button></div></>;

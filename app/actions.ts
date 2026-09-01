@@ -11,7 +11,7 @@ const validStatuses: Status[] = ['active', 'paused', 'canceled'];
 function string(data: FormData, key: string) { return String(data.get(key) ?? '').trim(); }
 function safeUrl(value: string) { if (!value) return null; try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) ? url.toString() : null; } catch { return null; } }
 async function currentUser() { const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) redirect('/login'); return { supabase, user }; }
-function refreshAll(subscriptionId?: string) { ['/dashboard', '/spending', '/calendar', '/settings'].forEach(path => revalidatePath(path)); if (subscriptionId) revalidatePath(`/subscriptions/${subscriptionId}`); }
+function refreshAll(subscriptionId?: string) { ['/dashboard', '/spending', '/calendar', '/settings', '/notifications'].forEach(path => revalidatePath(path)); if (subscriptionId) revalidatePath(`/subscriptions/${subscriptionId}`); }
 
 export async function saveSubscription(formData: FormData) {
   const { supabase, user } = await currentUser();
@@ -54,6 +54,25 @@ export async function acknowledgeNotification(notificationId: string) {
   if (readError || !data) throw new Error('Notification not found.');
   const { error } = await supabase.from('notifications').update({ acknowledged: true }).eq('subscription_id', data.subscription_id).eq('type', data.type);
   if (error) throw new Error(error.message); refreshAll();
+}
+
+export async function toggleNotificationRead(notificationId: string, acknowledged: boolean) {
+  const { supabase } = await currentUser();
+  const { error } = await supabase.from('notifications').update({ acknowledged }).eq('id', notificationId);
+  if (error) throw new Error(error.message);
+  refreshAll();
+}
+
+export async function markAllNotificationsRead() {
+  const { supabase, user } = await currentUser();
+  const { data: userSubs, error: subError } = await supabase.from('subscriptions').select('id').eq('user_id', user.id);
+  if (subError) throw new Error(subError.message);
+  const subIds = (userSubs ?? []).map(s => s.id);
+  if (subIds.length > 0) {
+    const { error } = await supabase.from('notifications').update({ acknowledged: true }).in('subscription_id', subIds).eq('acknowledged', false);
+    if (error) throw new Error(error.message);
+  }
+  refreshAll();
 }
 
 export async function saveSettings(formData: FormData) {

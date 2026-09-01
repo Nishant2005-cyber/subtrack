@@ -28,6 +28,36 @@ async function deliver(profile: Profile, title: string, message: string) {
     const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
     try { await client.messages.create({ to: profile.phone, from: process.env.TWILIO_FROM_NUMBER, body: `${title}: ${message}` }); channels.push('sms'); } catch { /* Keep the in-app notification; a carrier failure must not break the entire run. */ }
   }
+  if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: process.env.TELEGRAM_CHAT_ID,
+          text: `🔔 *${title}*\n\n${message}\n\n[Open SubTrack](${appUrl}/dashboard)`,
+          parse_mode: 'Markdown',
+        }),
+      });
+    } catch (err) {
+      console.error('Telegram notification failed:', err);
+    }
+  }
+  if (process.env.DISCORD_WEBHOOK_URL) {
+    try {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      await fetch(process.env.DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `🔔 **${title}**\n\n${message}\n\n${appUrl}/dashboard`,
+        }),
+      });
+    } catch (err) {
+      console.error('Discord webhook notification failed:', err);
+    }
+  }
   return channels;
 }
 
