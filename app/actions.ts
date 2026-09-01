@@ -15,9 +15,15 @@ function refreshAll(subscriptionId?: string) { ['/dashboard', '/spending', '/cal
 
 export async function saveSubscription(formData: FormData) {
   const { supabase, user } = await currentUser();
-  const id = string(formData, 'id'); const service_name = string(formData, 'service_name'); const category = string(formData, 'category') as Category; const billing_cycle = string(formData, 'billing_cycle') as Cycle;
+  const id = string(formData, 'id'); const service_name = string(formData, 'service_name');
+  let category = string(formData, 'category').toLowerCase() as Category;
+  const custom_category = string(formData, 'custom_category').toLowerCase();
+  if (category === 'other' && custom_category) {
+    category = custom_category as Category;
+  }
+  const billing_cycle = string(formData, 'billing_cycle') as Cycle;
   const cost = Number(string(formData, 'cost')); const currency = string(formData, 'currency').toUpperCase(); const next_renewal_date = string(formData, 'next_renewal_date');
-  if (!service_name || !validCategories.includes(category) || !validCycles.includes(billing_cycle) || !Number.isFinite(cost) || cost < 0 || !/^[A-Z]{3}$/.test(currency) || !/^\d{4}-\d{2}-\d{2}$/.test(next_renewal_date)) throw new Error('Please provide valid subscription details.');
+  if (!service_name || !category || category.length > 50 || !validCycles.includes(billing_cycle) || !Number.isFinite(cost) || cost < 0 || !/^[A-Z]{3}$/.test(currency) || !/^\d{4}-\d{2}-\d{2}$/.test(next_renewal_date)) throw new Error('Please provide valid subscription details.');
   const payload = { service_name, category, cost, currency, billing_cycle, next_renewal_date, renewal_url: safeUrl(string(formData, 'renewal_url')), cancel_url: safeUrl(string(formData, 'cancel_url')) };
   const result = id ? await supabase.from('subscriptions').update(payload).eq('id', id).eq('user_id', user.id) : await supabase.from('subscriptions').insert({ ...payload, user_id: user.id });
   if (result.error) throw new Error(result.error.message); refreshAll(id || undefined);

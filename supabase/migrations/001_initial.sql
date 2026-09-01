@@ -15,7 +15,7 @@ create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users(id) on delete cascade,
   service_name text not null check (char_length(service_name) between 1 and 100),
-  category text not null check (category in ('streaming', 'software', 'gym', 'cloud', 'news', 'other')),
+  category text not null check (char_length(category) between 1 and 50),
   cost numeric(12,2) not null check (cost >= 0),
   currency text not null default 'INR' check (char_length(currency) = 3),
   billing_cycle text not null default 'monthly' check (billing_cycle in ('monthly', 'yearly')),

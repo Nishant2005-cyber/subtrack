@@ -1,4 +1,4 @@
-export type Category = 'streaming' | 'software' | 'gym' | 'cloud' | 'news' | 'other';
+export type Category = 'streaming' | 'software' | 'gym' | 'cloud' | 'news' | 'other' | (string & {});
 export type Status = 'active' | 'paused' | 'canceled';
 export type Cycle = 'monthly' | 'yearly';
 
