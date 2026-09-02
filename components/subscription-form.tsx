@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react';
 import { CalendarDays, Pencil, Plus, Tag, X } from 'lucide-react';
 import { saveSubscription } from '@/app/actions';
+import { useToast } from '@/components/toast';
 import { categoryLabel } from '@/lib/format';
 import type { Subscription } from '@/lib/types';
 
@@ -17,6 +18,8 @@ export function SubscriptionForm({ subscription }: { subscription?: Subscription
   const [category, setCategory] = useState<string>(isCustom ? 'other' : (subscription?.category ?? 'streaming'));
   const [customCategory, setCustomCategory] = useState<string>(isCustom ? subscription!.category : '');
 
+  const { success: toastSuccess, error: toastError } = useToast();
+
   const handleOpen = () => {
     const custom = subscription?.category ? !standardCategories.includes(subscription.category.toLowerCase()) : false;
     setCategory(custom ? 'other' : (subscription?.category ?? 'streaming'));
@@ -30,8 +33,11 @@ export function SubscriptionForm({ subscription }: { subscription?: Subscription
       await saveSubscription(formData);
       setOpen(false);
       setError('');
+      toastSuccess(subscription ? 'Subscription updated successfully!' : 'Subscription added successfully!');
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Could not save subscription.');
+      const msg = e instanceof Error ? e.message : 'Could not save subscription.';
+      setError(msg);
+      toastError(msg);
     }
   });
 

@@ -17,6 +17,7 @@ import {
   Sparkles 
 } from 'lucide-react';
 import { markAllNotificationsRead, toggleNotificationRead } from '@/app/actions';
+import { useToast } from '@/components/toast';
 import { categoryLabel, currency, dateLabel } from '@/lib/format';
 import type { Notification, Subscription } from '@/lib/types';
 
@@ -55,12 +56,15 @@ export function NotificationInbox({ initialNotifications }: { initialNotificatio
     return true;
   });
 
+  const { success: toastSuccess, error: toastError } = useToast();
+
   const handleToggle = (id: string, current: boolean) => {
     startTransition(async () => {
       try {
         await toggleNotificationRead(id, !current);
-      } catch {
-        alert('Could not update notification status.');
+        toastSuccess(!current ? 'Reminder marked as read' : 'Reminder marked as unread');
+      } catch (e) {
+        toastError(e instanceof Error ? e.message : 'Could not update notification status.');
       }
     });
   };
@@ -69,8 +73,9 @@ export function NotificationInbox({ initialNotifications }: { initialNotificatio
     startTransition(async () => {
       try {
         await markAllNotificationsRead();
-      } catch {
-        alert('Could not mark all as read.');
+        toastSuccess('All reminders marked as read!');
+      } catch (e) {
+        toastError(e instanceof Error ? e.message : 'Could not mark all as read.');
       }
     });
   };

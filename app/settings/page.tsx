@@ -1,10 +1,34 @@
 import { redirect } from 'next/navigation';
-import { Bell, Mail, MessageSquare, Moon } from 'lucide-react';
+import { UserCheck } from 'lucide-react';
 import { AppShell } from '@/components/app-shell';
+import { ProfileForm } from '@/components/profile-form';
 import { getAppData } from '@/lib/data';
-import { saveSettings } from '@/app/actions';
+
+export const dynamic = 'force-dynamic';
 
 export default async function SettingsPage() {
-  const { user, settings } = await getAppData(); if (!user || !settings) redirect('/login');
-  return <AppShell email={user.email ?? null}><div className="mx-auto max-w-3xl px-5 py-7 sm:px-8 lg:px-10"><header><p className="text-sm text-stone-500">Make reminders work around your life</p><h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl">Notification settings</h1></header><form action={saveSettings} className="mt-7 space-y-5"><section className="card overflow-hidden"><div className="flex gap-3 border-b p-5"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-violet-100 text-violet"><Bell size={18}/></span><div><h2 className="panel-title">Renewal timing</h2><p className="mt-1 text-sm leading-5 text-stone-500">Choose how much notice you want before a subscription renews.</p></div></div><div className="p-5"><label className="block max-w-xs text-xs font-bold">Remind me<select name="reminder_days_before" defaultValue={settings.reminder_days_before} className="field"><option value="1">1 day before</option><option value="2">2 days before</option><option value="3">3 days before</option><option value="7">7 days before</option></select></label><p className="mt-3 text-xs text-stone-500">We repeat active renewal reminders daily until you acknowledge them or change the subscription status.</p></div></section><section className="card overflow-hidden"><div className="flex gap-3 border-b p-5"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-lime"><Mail size={18}/></span><div><h2 className="panel-title">Delivery channels</h2><p className="mt-1 text-sm leading-5 text-stone-500">Use email, SMS, or both. In-app reminders always remain visible.</p></div></div><div className="divide-y"><label className="flex cursor-pointer items-center gap-4 p-5"><input name="notify_email" type="checkbox" defaultChecked={settings.notify_email} className="h-4 w-4 accent-violet"/><span className="grid h-9 w-9 place-items-center rounded-lg bg-stone-100"><Mail size={17}/></span><span><b className="block text-sm">Email reminders</b><span className="text-xs text-stone-500">Send to {settings.email || user.email}</span></span></label><label className="flex cursor-pointer items-center gap-4 p-5"><input name="notify_sms" type="checkbox" defaultChecked={settings.notify_sms} className="h-4 w-4 accent-violet"/><span className="grid h-9 w-9 place-items-center rounded-lg bg-stone-100"><MessageSquare size={17}/></span><span className="flex-1"><b className="block text-sm">SMS reminders</b><span className="text-xs text-stone-500">Optional, standard carrier fees may apply</span></span></label><div className="px-5 pb-5"><label className="block max-w-sm text-xs font-bold">Phone number <span className="font-normal text-stone-400">(include country code for SMS)</span><input name="phone" type="tel" defaultValue={settings.phone || ''} placeholder="+91 98765 43210" className="field"/></label></div></div></section><section className="card overflow-hidden"><div className="flex gap-3 border-b p-5"><span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-orange-100 text-orange-700"><Moon size={18}/></span><div><h2 className="panel-title">Quiet hours</h2><p className="mt-1 text-sm leading-5 text-stone-500">Avoid SMS and email notifications during the hours you choose.</p></div></div><div className="grid gap-4 p-5 sm:grid-cols-2"><label className="text-xs font-bold">Start time<input name="quiet_hours_start" type="time" defaultValue={settings.quiet_hours_start?.slice(0,5) || ''} className="field"/></label><label className="text-xs font-bold">End time<input name="quiet_hours_end" type="time" defaultValue={settings.quiet_hours_end?.slice(0,5) || ''} className="field"/></label></div></section><div className="flex justify-end"><button className="action bg-ink px-5 py-3 text-white">Save preferences</button></div></form></div></AppShell>;
+  const { user, settings } = await getAppData();
+  if (!user || !settings) redirect('/login');
+
+  const fullName = (user.user_metadata?.full_name as string) || null;
+
+  return (
+    <AppShell email={user.email ?? null}>
+      <div className="mx-auto max-w-3xl px-5 py-7 sm:px-8 lg:px-10">
+        <header className="mb-7">
+          <p className="flex items-center gap-1.5 text-sm text-stone-500">
+            <UserCheck size={14} className="text-violet" />
+            Account & Preferences
+          </p>
+          <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl">Account Settings</h1>
+        </header>
+
+        <ProfileForm
+          userEmail={user.email ?? null}
+          userFullName={fullName}
+          settings={settings}
+        />
+      </div>
+    </AppShell>
+  );
 }

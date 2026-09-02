@@ -81,6 +81,40 @@ export async function markAllNotificationsRead() {
   refreshAll();
 }
 
+export async function updateUserProfile(formData: FormData) {
+  const { supabase, user } = await currentUser();
+  const fullName = string(formData, 'full_name');
+  const phone = string(formData, 'phone') || null;
+
+  // Update Supabase Auth user metadata
+  const { error: authError } = await supabase.auth.updateUser({
+    data: { full_name: fullName },
+  });
+  if (authError) throw new Error(authError.message);
+
+  // Update public users profile table
+  const { error: dbError } = await supabase.from('users').update({ phone }).eq('id', user.id);
+  if (dbError) throw new Error(dbError.message);
+
+  refreshAll();
+}
+
+export async function updateUserPassword(formData: FormData) {
+  const { supabase } = await currentUser();
+  const newPassword = string(formData, 'new_password');
+  const confirmPassword = string(formData, 'confirm_password');
+
+  if (newPassword.length < 6) {
+    throw new Error('New password must be at least 6 characters long.');
+  }
+  if (newPassword !== confirmPassword) {
+    throw new Error('New passwords do not match. Please re-enter.');
+  }
+
+  const { error } = await supabase.auth.updateUser({ password: newPassword });
+  if (error) throw new Error(error.message);
+}
+
 export async function saveSettings(formData: FormData) {
   const { supabase, user } = await currentUser(); const reminder_days_before = Number(string(formData, 'reminder_days_before'));
   if (![1,2,3,7].includes(reminder_days_before)) throw new Error('Choose a valid reminder window.');

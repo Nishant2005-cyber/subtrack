@@ -20,15 +20,19 @@ export async function getAppData() {
     profile = created;
   }
 
-  if (profileRes.error || subscriptions.error || usage.error || notifications.error) {
+  const firstError = profileRes.error || subscriptions.error || usage.error || notifications.error;
+  if (firstError) {
+    if (firstError.message?.toLowerCase().includes('jwt') || firstError.code === 'PGRST301') {
+      // Clock skew or invalid/stale JWT token: gracefully return unauthenticated state so pages redirect to /login
+      return { user: null, settings: null as UserSettings | null, subscriptions: [] as Subscription[], usage: [] as UsageLog[], notifications: [] as Notification[] };
+    }
     console.error('Supabase getAppData Error Details:', {
       user: profileRes.error,
       subscriptions: subscriptions.error,
       usage: usage.error,
       notifications: notifications.error,
     });
-    const firstError = profileRes.error || subscriptions.error || usage.error || notifications.error;
-    throw new Error(`Database error: ${firstError?.message ?? 'Could not load subscription data'}. (Make sure you have run supabase/migrations/001_initial.sql in Supabase SQL editor)`);
+    throw new Error(`Database error: ${firstError.message ?? 'Could not load subscription data'}. (Make sure you have run supabase/migrations/001_initial.sql in Supabase SQL editor)`);
   }
 
   return { user, settings: profile as UserSettings, subscriptions: (subscriptions.data ?? []) as Subscription[], usage: (usage.data ?? []) as UsageLog[], notifications: (notifications.data ?? []) as Notification[] };
