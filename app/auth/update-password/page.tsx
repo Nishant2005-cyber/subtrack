@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { AlertCircle, CheckCircle2, KeyRound, Lock } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Eye, EyeOff, KeyRound } from 'lucide-react';
 import { useToast } from '@/components/toast';
 
 export default function UpdatePasswordPage() {
@@ -11,6 +11,8 @@ export default function UpdatePasswordPage() {
   const { success: toastSuccess } = useToast();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -74,16 +76,23 @@ export default function UpdatePasswordPage() {
               New Password
               <div className="relative mt-1">
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   required
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="field pr-10"
+                  className="field pr-11"
                   autoFocus
                 />
-                <Lock size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </label>
 
@@ -91,15 +100,22 @@ export default function UpdatePasswordPage() {
               Confirm New Password
               <div className="relative mt-1">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? 'text' : 'password'}
                   required
                   minLength={6}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Repeat your password"
-                  className="field pr-10"
+                  className="field pr-11"
                 />
-                <Lock size={16} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                </button>
               </div>
             </label>
 

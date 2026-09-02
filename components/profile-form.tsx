@@ -13,7 +13,9 @@ import {
   ShieldCheck, 
   User, 
   AlertCircle, 
-  CheckCircle2 
+  CheckCircle2,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { saveSettings, updateUserPassword, updateUserProfile } from '@/app/actions';
 import { useToast } from '@/components/toast';
@@ -37,8 +39,12 @@ export function ProfileForm({
   // Password form state
   const [passwordPending, startPasswordTransition] = useTransition();
   const [passwordStatus, setPasswordStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Notification settings state
   const [settingsPending, startSettingsTransition] = useTransition();
@@ -63,8 +69,14 @@ export function ProfileForm({
     e.preventDefault();
     setPasswordStatus(null);
 
+    if (!currentPassword) {
+      const msg = 'Please enter your current password.';
+      setPasswordStatus({ type: 'error', message: msg });
+      return toastError(msg);
+    }
+
     if (newPassword.length < 6) {
-      const msg = 'Password must be at least 6 characters long.';
+      const msg = 'New password must be at least 6 characters long.';
       setPasswordStatus({ type: 'error', message: msg });
       return toastError(msg);
     }
@@ -75,12 +87,19 @@ export function ProfileForm({
       return toastError(msg);
     }
 
+    if (currentPassword === newPassword) {
+      const msg = 'New password must be different from your current password.';
+      setPasswordStatus({ type: 'error', message: msg });
+      return toastError(msg);
+    }
+
     const formData = new FormData(e.currentTarget);
     startPasswordTransition(async () => {
       try {
         await updateUserPassword(formData);
-        setPasswordStatus({ type: 'success', message: 'Password changed successfully!' });
+        setPasswordStatus({ type: 'success', message: 'Password updated successfully!' });
         toastSuccess('Password updated successfully!');
+        setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
       } catch (e) {
@@ -213,40 +232,79 @@ export function ProfileForm({
             </div>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-xs font-bold text-stone-700">
-              New Password
+          <div className="space-y-4">
+            <label className="block text-xs font-bold text-stone-700">
+              Current Password <span className="text-rose-500">*</span>
               <div className="relative mt-1.5">
                 <input
-                  name="new_password"
-                  type="password"
+                  name="current_password"
+                  type={showCurrentPassword ? 'text' : 'password'}
                   required
-                  minLength={6}
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="At least 6 characters"
-                  className="field pr-10"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter your current password"
+                  className="field pr-11"
                 />
-                <Lock size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                  aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showCurrentPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                </button>
               </div>
             </label>
 
-            <label className="text-xs font-bold text-stone-700">
-              Confirm New Password
-              <div className="relative mt-1.5">
-                <input
-                  name="confirm_password"
-                  type="password"
-                  required
-                  minLength={6}
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Repeat new password"
-                  className="field pr-10"
-                />
-                <Lock size={15} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
-              </div>
-            </label>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-xs font-bold text-stone-700">
+                New Password
+                <div className="relative mt-1.5">
+                  <input
+                    name="new_password"
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="At least 6 characters"
+                    className="field pr-11"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </label>
+
+              <label className="text-xs font-bold text-stone-700">
+                Confirm New Password
+                <div className="relative mt-1.5">
+                  <input
+                    name="confirm_password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repeat new password"
+                    className="field pr-11"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                    aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </label>
+            </div>
           </div>
 
           <div className="flex justify-end pt-2">

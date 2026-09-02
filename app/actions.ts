@@ -100,17 +100,38 @@ export async function updateUserProfile(formData: FormData) {
 }
 
 export async function updateUserPassword(formData: FormData) {
-  const { supabase } = await currentUser();
+  const { supabase, user } = await currentUser();
+  const currentPassword = string(formData, 'current_password');
   const newPassword = string(formData, 'new_password');
   const confirmPassword = string(formData, 'confirm_password');
 
+  if (!currentPassword) {
+    throw new Error('Please enter your current password.');
+  }
   if (newPassword.length < 6) {
     throw new Error('New password must be at least 6 characters long.');
   }
   if (newPassword !== confirmPassword) {
     throw new Error('New passwords do not match. Please re-enter.');
   }
+  if (currentPassword === newPassword) {
+    throw new Error('New password must be different from your current password.');
+  }
 
+  // 1. Verify current/old password
+  if (!user.email) {
+    throw new Error('User email not found.');
+  }
+  const { error: verifyError } = await supabase.auth.signInWithPassword({
+    email: user.email,
+    password: currentPassword,
+  });
+
+  if (verifyError) {
+    throw new Error('Current password is incorrect. Please check and try again.');
+  }
+
+  // 2. Apply new password
   const { error } = await supabase.auth.updateUser({ password: newPassword });
   if (error) throw new Error(error.message);
 }

@@ -2,12 +2,14 @@
 
 import { useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, LockKeyhole, Mail } from 'lucide-react';
+import { AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, Eye, EyeOff, LockKeyhole, Mail } from 'lucide-react';
+import { AppLogo, SubTrackIcon } from '@/components/app-logo';
 
 export default function LoginPage() {
   const [mode, setMode] = useState<'login' | 'signup' | 'forgot'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [status, setStatus] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -85,9 +87,9 @@ export default function LoginPage() {
       <section className="relative hidden overflow-hidden rounded-[28px] bg-[#282a25] p-11 text-white md:block">
         <div className="absolute right-[-80px] top-[-70px] h-64 w-64 rounded-full bg-lime opacity-20" />
         <div className="relative">
-          <div className="mb-20 flex items-center gap-2 text-2xl font-bold tracking-tight">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-lime text-lg text-ink">s</span>
-            SubTrack
+          <div className="mb-20 flex items-center gap-3 text-2xl font-bold tracking-tight text-white">
+            <SubTrackIcon size={38} />
+            <span>Sub<span className="text-lime">Track</span></span>
           </div>
           <h1 className="max-w-md font-serif text-5xl leading-[1.1]">Make every subscription earn its place.</h1>
           <p className="mt-6 max-w-md text-base leading-7 text-stone-300">
@@ -109,10 +111,7 @@ export default function LoginPage() {
       {/* Right Auth Form */}
       <section className="mx-auto flex w-full max-w-md flex-col justify-center py-12 md:py-0">
         <div className="mb-9 md:hidden">
-          <div className="flex items-center gap-2 text-2xl font-bold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-lime">s</span>
-            SubTrack
-          </div>
+          <AppLogo size="md" href="/login" />
         </div>
 
         <p className="mb-2 text-sm text-stone-500">Welcome to SubTrack</p>
@@ -175,15 +174,25 @@ export default function LoginPage() {
                   </button>
                 )}
               </div>
-              <input
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                type="password"
-                minLength={6}
-                required
-                placeholder="At least 6 characters"
-                className="mt-2 w-full rounded-xl border border-stone-200 bg-white px-4 py-3 outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10"
-              />
+              <div className="relative mt-2">
+                <input
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  type={showPassword ? 'text' : 'password'}
+                  minLength={6}
+                  required
+                  placeholder="At least 6 characters"
+                  className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 pr-11 outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </label>
           )}
 
