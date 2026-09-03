@@ -1,22 +1,20 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import {
   Bell,
   CalendarDays,
   ChartNoAxesCombined,
   LayoutDashboard,
-  LogOut,
   Menu,
-  PanelLeftClose,
-  PanelLeftOpen,
   Settings,
   X,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
 import { AppLogo } from '@/components/app-logo';
+
+type SidebarMode = 'expanded' | 'collapsed' | 'hover';
 
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -26,6 +24,112 @@ const links = [
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
+function SidebarPanelIcon({ className = '' }: { className?: string }) {
+  return (
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      className={className}
+    >
+      <rect x="1.5" y="2" width="13" height="12" rx="2.5" />
+      <line x1="5.5" y1="2" x2="5.5" y2="14" strokeDasharray="1.5 1.5" />
+    </svg>
+  );
+}
+
+function SidebarControlDropdown({
+  mode,
+  onSelectMode,
+  isOpen,
+  onToggle,
+  onClose,
+  isCompact,
+}: {
+  mode: SidebarMode;
+  onSelectMode: (m: SidebarMode) => void;
+  isOpen: boolean;
+  onToggle: () => void;
+  onClose: () => void;
+  isCompact: boolean;
+}) {
+  const modeLabels: Record<SidebarMode, string> = {
+    expanded: 'Expanded',
+    collapsed: 'Collapsed',
+    hover: 'Expand on hover',
+  };
+
+  return (
+    <div className="relative inline-block text-left">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onToggle();
+        }}
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300/80 bg-white/80 text-stone-600 shadow-sm transition hover:bg-white hover:text-ink hover:border-stone-400"
+        title="Sidebar control"
+        aria-label="Sidebar control"
+      >
+        <SidebarPanelIcon className="text-stone-600" />
+      </button>
+
+      {isOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onClose();
+            }}
+          />
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute bottom-full mb-2 left-0 w-44 rounded-2xl border border-stone-200 bg-white p-1.5 text-ink shadow-xl shadow-stone-900/10 z-50 animate-in fade-in zoom-in-95 duration-100"
+          >
+            <div className="px-3 py-1.5 text-[11px] font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100 mb-1">
+              Sidebar control
+            </div>
+            <div className="space-y-0.5">
+              {[
+                { id: 'expanded', label: 'Expanded' },
+                { id: 'collapsed', label: 'Collapsed' },
+                { id: 'hover', label: 'Expand on hover' },
+              ].map((item) => {
+                const isSelected = mode === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => onSelectMode(item.id as SidebarMode)}
+                    className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-left transition ${
+                      isSelected
+                        ? 'bg-stone-100 text-ink'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-ink'
+                    }`}
+                  >
+                    <span className="grid w-3 place-items-center">
+                      {isSelected ? (
+                        <span className="h-1.5 w-1.5 rounded-full bg-ink" />
+                      ) : null}
+                    </span>
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function AppShell({
   children,
   email,
@@ -34,35 +138,40 @@ export function AppShell({
   email: string | null;
 }) {
   const path = usePathname();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
 
-  // Restore saved collapse state from localStorage
+  // Sidebar modes: 'expanded' | 'collapsed' | 'hover'
+  const [mode, setMode] = useState<SidebarMode>('expanded');
+  const [isHovered, setIsHovered] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  // Restore saved sidebar mode from localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem('subtrack_sidebar_collapsed');
-      if (saved !== null) {
-        setCollapsed(saved === 'true');
+      const saved = localStorage.getItem('subtrack_sidebar_mode') as SidebarMode | null;
+      if (saved && ['expanded', 'collapsed', 'hover'].includes(saved)) {
+        setMode(saved);
       }
     } catch {
-      // ignore in restricted contexts
+      // ignore
     }
   }, []);
 
-  const toggleCollapsed = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem('subtrack_sidebar_collapsed', String(next));
-      } catch {
-        // ignore
-      }
-      return next;
-    });
+  const handleSelectMode = (newMode: SidebarMode) => {
+    setMode(newMode);
+    setMenuOpen(false);
+    try {
+      localStorage.setItem('subtrack_sidebar_mode', newMode);
+    } catch {
+      // ignore
+    }
   };
 
-  const renderNavLinks = (isCompact: boolean) => (
+  const isHoverMode = mode === 'hover';
+  const isCollapsedMode = mode === 'collapsed';
+  const isCompact = isCollapsedMode || (isHoverMode && !isHovered);
+
+  const renderNavLinks = (compact: boolean) => (
     <nav className="grid gap-1.5">
       {links.map(({ href, label, icon: Icon }) => {
         const isActive = path === href;
@@ -73,7 +182,7 @@ export function AppShell({
             href={href}
             title={label}
             className={`flex items-center rounded-xl text-sm font-semibold transition ${
-              isCompact
+              compact
                 ? 'h-11 w-11 justify-center mx-auto'
                 : 'gap-3 px-3 py-2.5'
             } ${
@@ -83,75 +192,62 @@ export function AppShell({
             }`}
           >
             <Icon size={19} className="shrink-0" />
-            {!isCompact && <span>{label}</span>}
+            {!compact && <span>{label}</span>}
           </Link>
         );
       })}
     </nav>
   );
 
-  const renderFooter = (isCompact: boolean) => (
+  const renderFooter = (compact: boolean) => (
     <div className="mt-auto border-t border-stone-200 pt-4">
-      {!isCompact && (
-        <div className="mb-3 truncate px-3 text-xs text-stone-500" title={email ?? ''}>
-          {email}
-        </div>
-      )}
-      <button
-        onClick={async () => {
-          await createClient().auth.signOut();
-          router.replace('/login');
-          router.refresh();
-        }}
-        title="Log out"
-        className={`flex items-center rounded-xl text-sm font-semibold text-stone-500 hover:bg-white hover:text-ink transition ${
-          isCompact ? 'h-11 w-11 justify-center mx-auto' : 'w-full gap-3 px-3 py-2.5'
-        }`}
-      >
-        <LogOut size={18} className="shrink-0" />
-        {!isCompact && <span>Log out</span>}
-      </button>
+      <SidebarControlDropdown
+        mode={mode}
+        onSelectMode={handleSelectMode}
+        isOpen={menuOpen}
+        onToggle={() => setMenuOpen(!menuOpen)}
+        onClose={() => setMenuOpen(false)}
+        isCompact={compact}
+      />
     </div>
   );
 
   return (
     <div
       className={`min-h-screen transition-all duration-300 lg:grid ${
-        collapsed ? 'lg:grid-cols-[76px_1fr]' : 'lg:grid-cols-[240px_1fr]'
+        mode === 'expanded' ? 'lg:grid-cols-[240px_1fr]' : 'lg:grid-cols-[76px_1fr]'
       }`}
     >
       {/* Desktop Sidebar */}
       <aside
+        onMouseEnter={() => {
+          if (isHoverMode) setIsHovered(true);
+        }}
+        onMouseLeave={() => {
+          if (isHoverMode) setIsHovered(false);
+        }}
         className={`sticky top-0 hidden h-screen flex-col border-r border-stone-200 bg-[#f1f2ed] transition-all duration-300 lg:flex ${
-          collapsed ? 'w-[76px] p-3' : 'w-[240px] p-5'
+          isHoverMode && isHovered
+            ? 'absolute left-0 top-0 z-30 w-[240px] p-5 shadow-2xl border-r-stone-300'
+            : isCompact
+            ? 'w-[76px] p-3'
+            : 'w-[240px] p-5'
         }`}
       >
-        {/* Top Header: Logo + Toggle Button */}
+        {/* Top Header: Clean SubTrack Logo */}
         <div
           className={`mb-8 flex items-center transition-all ${
-            collapsed
-              ? 'flex-col gap-3 justify-center'
-              : 'justify-between px-1'
+            isCompact ? 'justify-center' : 'px-1'
           }`}
         >
-          <AppLogo size={collapsed ? 'sm' : 'md'} showText={!collapsed} href="/dashboard" />
-          
-          <button
-            type="button"
-            onClick={toggleCollapsed}
-            className="rounded-lg p-1.5 text-stone-400 hover:bg-stone-200/70 hover:text-ink transition shrink-0"
-            title={collapsed ? 'Expand sidebar' : 'Hide sidebar fields'}
-            aria-label={collapsed ? 'Expand sidebar' : 'Hide sidebar fields'}
-          >
-            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-          </button>
+          <AppLogo size={isCompact ? 'sm' : 'md'} showText={!isCompact} href="/dashboard" />
         </div>
 
         {/* Navigation Items */}
-        {renderNavLinks(collapsed)}
+        {renderNavLinks(isCompact)}
 
-        {/* Bottom Profile / Logout */}
-        {renderFooter(collapsed)}
+        {/* Bottom: Sidebar Control Dropdown (Replaced Logout & Email) */}
+        {renderFooter(isCompact)}
       </aside>
 
       {/* Mobile Top Header */}
@@ -187,7 +283,16 @@ export function AppShell({
               </button>
             </div>
             {renderNavLinks(false)}
-            {renderFooter(false)}
+            <div className="mt-auto border-t border-stone-200 pt-4">
+              <Link
+                href="/settings"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-semibold text-stone-600 bg-white/70"
+              >
+                <span>Settings & Account</span>
+                <span className="text-[10px] text-stone-400 truncate max-w-[120px]">{email}</span>
+              </Link>
+            </div>
           </aside>
         </div>
       )}

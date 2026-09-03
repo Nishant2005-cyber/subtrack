@@ -25,9 +25,11 @@ function getActiveLogo() {
 export function SubTrackIcon({
   size = 32,
   className = '',
+  title = 'Back to dashboard',
 }: {
   size?: number;
   className?: string;
+  title?: string;
 }) {
   const [logo, setLogo] = useState(getActiveLogo);
 
@@ -53,7 +55,7 @@ export function SubTrackIcon({
     <div
       style={{ width: size, height: size }}
       className={`relative shrink-0 overflow-hidden rounded-xl bg-[#171913] border border-white/10 shadow-sm transition-all duration-500 ${className}`}
-      title={`Current logo: ${logo.name} (Rotates automatically every 1 hour)`}
+      title={title}
     >
       <img
         src={logo.src}
@@ -71,11 +73,13 @@ export function AppLogo({
   showText = true,
   href = '/dashboard',
   className = '',
+  title = 'Back to dashboard',
 }: {
   size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
   href?: string;
   className?: string;
+  title?: string;
 }) {
   const pixelSize = size === 'sm' ? 28 : size === 'lg' ? 44 : 36;
   const textClasses =
@@ -86,8 +90,8 @@ export function AppLogo({
       : 'text-xl font-bold tracking-tight';
 
   const content = (
-    <div className={`flex items-center gap-2.5 select-none ${className}`}>
-      <SubTrackIcon size={pixelSize} />
+    <div className={`flex items-center gap-2.5 select-none ${className}`} title={title}>
+      <SubTrackIcon size={pixelSize} title={title} />
       {showText && (
         <span className={`font-sans text-ink ${textClasses}`}>
           Sub<span className="text-stone-500">Track</span>
@@ -98,7 +102,7 @@ export function AppLogo({
 
   if (href) {
     return (
-      <Link href={href} className="inline-flex items-center transition hover:opacity-90">
+      <Link href={href} title={title} className="inline-flex items-center transition hover:opacity-90">
         {content}
       </Link>
     );
