@@ -5,6 +5,7 @@ import { ExternalLink, MoreHorizontal, RotateCcw, Trash2, XCircle } from 'lucide
 import { useState, useTransition } from 'react';
 import { deleteSubscription, logUsage, setSubscriptionStatus } from '@/app/actions';
 import { useToast } from '@/components/toast';
+import { AutopayBadge } from '@/components/autopay-badge';
 import { categoryLabel, currency, dateLabel, dueLabel } from '@/lib/format';
 import type { Subscription } from '@/lib/types';
 
@@ -67,9 +68,18 @@ export function SubscriptionRow({
             </span>
           ) : null}
         </div>
-        <div className="mt-0.5 text-xs text-stone-500">
-          {categoryLabel(subscription.category)} · {currency(subscription.cost, subscription.currency)} /{' '}
-          {subscription.billing_cycle === 'monthly' ? 'mo' : 'yr'}
+        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs">
+          <span className="text-stone-500">
+            {categoryLabel(subscription.category)} · {currency(subscription.cost, subscription.currency)} /{' '}
+            {subscription.billing_cycle === 'monthly' ? 'mo' : 'yr'}
+          </span>
+          {!isCanceled && (
+            <AutopayBadge
+              subscriptionId={subscription.id}
+              currentStatus={subscription.autopay_status ?? 'running'}
+              serviceName={subscription.service_name}
+            />
+          )}
         </div>
       </Link>
 
@@ -80,6 +90,10 @@ export function SubscriptionRow({
               ? 'text-red-600'
               : isCanceled
               ? 'text-stone-400'
+              : subscription.autopay_status === 'paused' && dueLabel(subscription.next_renewal_date).includes('Past')
+              ? 'text-amber-700'
+              : subscription.autopay_status === 'deleted' && dueLabel(subscription.next_renewal_date).includes('Past')
+              ? 'text-rose-700'
               : ''
           }`}
         >
@@ -87,10 +101,18 @@ export function SubscriptionRow({
             ? 'Not renewing'
             : isPaused
             ? 'Paused'
+            : subscription.autopay_status === 'paused' && dueLabel(subscription.next_renewal_date).includes('Past')
+            ? 'Autopay paused'
+            : subscription.autopay_status === 'deleted' && dueLabel(subscription.next_renewal_date).includes('Past')
+            ? 'Expired'
             : dueLabel(subscription.next_renewal_date)}
         </div>
         <div className="mt-0.5 text-[11px] text-stone-400">
-          {isCanceled ? `Ended ${dateLabel(subscription.next_renewal_date)}` : dateLabel(subscription.next_renewal_date)}
+          {isCanceled
+            ? `Ended ${dateLabel(subscription.next_renewal_date)}`
+            : subscription.autopay_status === 'deleted' && dueLabel(subscription.next_renewal_date).includes('Past')
+            ? `Ended ${dateLabel(subscription.next_renewal_date)}`
+            : dateLabel(subscription.next_renewal_date)}
         </div>
       </div>
 

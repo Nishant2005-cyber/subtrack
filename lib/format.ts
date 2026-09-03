@@ -6,4 +6,5 @@ export const currency = (amount: number, code = 'INR') => new Intl.NumberFormat(
 export const monthlyCost = (cost: number, cycle: Cycle) => cycle === 'yearly' ? cost / 12 : cost;
 export const daysUntil = (date: string) => differenceInCalendarDays(parseISO(date), new Date());
 export const dateLabel = (date: string) => format(parseISO(date), 'd MMM');
+export const getTodayDateStr = () => format(new Date(), 'yyyy-MM-dd');
 export function dueLabel(date: string) { const days = daysUntil(date); return days < 0 ? 'Past due' : days === 0 ? 'Due today' : days === 1 ? 'Due tomorrow' : `Due in ${days} days`; }

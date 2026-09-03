@@ -1,6 +1,7 @@
 export type Category = 'streaming' | 'software' | 'gym' | 'cloud' | 'news' | 'other' | (string & {});
 export type Status = 'active' | 'paused' | 'canceled';
 export type Cycle = 'monthly' | 'yearly';
+export type AutopayStatus = 'running' | 'paused' | 'deleted';
 
 export type Subscription = {
   id: string;
@@ -12,6 +13,7 @@ export type Subscription = {
   billing_cycle: Cycle;
   next_renewal_date: string;
   status: Status;
+  autopay_status?: AutopayStatus;
   renewal_url: string | null;
   cancel_url: string | null;
   created_at: string;

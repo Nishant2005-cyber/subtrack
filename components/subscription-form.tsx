@@ -142,6 +142,61 @@ export function SubscriptionForm({ subscription }: { subscription?: Subscription
                 <input name="next_renewal_date" type="date" required defaultValue={subscription?.next_renewal_date} className="field mt-1" />
               </label>
 
+              <div className="sm:col-span-2">
+                <label className="text-xs font-bold block mb-1.5">
+                  Autopay Status
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <label className="relative flex cursor-pointer flex-col rounded-xl border border-stone-200 p-2.5 text-center transition hover:bg-stone-50 has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-50/50 has-[:checked]:ring-1 has-[:checked]:ring-emerald-500">
+                    <input
+                      type="radio"
+                      name="autopay_status"
+                      value="running"
+                      defaultChecked={!subscription || subscription.autopay_status === 'running'}
+                      className="sr-only"
+                    />
+                    <span className="text-xs font-bold text-emerald-800 flex items-center justify-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                      Running
+                    </span>
+                    <span className="mt-0.5 text-[10px] text-stone-500">Auto-renews</span>
+                  </label>
+
+                  <label className="relative flex cursor-pointer flex-col rounded-xl border border-stone-200 p-2.5 text-center transition hover:bg-stone-50 has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/50 has-[:checked]:ring-1 has-[:checked]:ring-amber-500">
+                    <input
+                      type="radio"
+                      name="autopay_status"
+                      value="paused"
+                      defaultChecked={subscription?.autopay_status === 'paused'}
+                      className="sr-only"
+                    />
+                    <span className="text-xs font-bold text-amber-800 flex items-center justify-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                      Paused
+                    </span>
+                    <span className="mt-0.5 text-[10px] text-stone-500">Won’t renew</span>
+                  </label>
+
+                  <label className="relative flex cursor-pointer flex-col rounded-xl border border-stone-200 p-2.5 text-center transition hover:bg-stone-50 has-[:checked]:border-rose-500 has-[:checked]:bg-rose-50/50 has-[:checked]:ring-1 has-[:checked]:ring-rose-500">
+                    <input
+                      type="radio"
+                      name="autopay_status"
+                      value="deleted"
+                      defaultChecked={subscription?.autopay_status === 'deleted'}
+                      className="sr-only"
+                    />
+                    <span className="text-xs font-bold text-rose-800 flex items-center justify-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                      Deleted
+                    </span>
+                    <span className="mt-0.5 text-[10px] text-stone-500">Expires</span>
+                  </label>
+                </div>
+                <p className="mt-1.5 text-[11px] text-stone-500">
+                  Select whether your bank/UPI autopay is active, paused, or deleted.
+                </p>
+              </div>
+
               <label className="text-xs font-bold sm:col-span-2">
                 Renewal link <span className="font-normal text-stone-400">(optional)</span>
                 <input name="renewal_url" type="url" defaultValue={subscription?.renewal_url ?? ''} placeholder="https://service.com/account" className="field mt-1" />

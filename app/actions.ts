@@ -3,11 +3,13 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import type { Category, Cycle, Status } from '@/lib/types';
+import { getTodayDateStr } from '@/lib/format';
+import type { AutopayStatus, Category, Cycle, Status } from '@/lib/types';
 
 const validCategories: Category[] = ['streaming', 'software', 'gym', 'cloud', 'news', 'other'];
 const validCycles: Cycle[] = ['monthly', 'yearly'];
 const validStatuses: Status[] = ['active', 'paused', 'canceled'];
+const validAutopayStatuses: AutopayStatus[] = ['running', 'paused', 'deleted'];
 function string(data: FormData, key: string) { return String(data.get(key) ?? '').trim(); }
 function safeUrl(value: string) { if (!value) return null; try { const url = new URL(value); return ['http:', 'https:'].includes(url.protocol) ? url.toString() : null; } catch { return null; } }
 async function currentUser() { const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser(); if (!user) redirect('/login'); return { supabase, user }; }
@@ -23,15 +25,72 @@ export async function saveSubscription(formData: FormData) {
   }
   const billing_cycle = string(formData, 'billing_cycle') as Cycle;
   const cost = Number(string(formData, 'cost')); const currency = string(formData, 'currency').toUpperCase(); const next_renewal_date = string(formData, 'next_renewal_date');
+  const autopay_status = (string(formData, 'autopay_status') || 'running') as AutopayStatus;
   if (!service_name || !category || category.length > 50 || !validCycles.includes(billing_cycle) || !Number.isFinite(cost) || cost < 0 || !/^[A-Z]{3}$/.test(currency) || !/^\d{4}-\d{2}-\d{2}$/.test(next_renewal_date)) throw new Error('Please provide valid subscription details.');
-  const payload = { service_name, category, cost, currency, billing_cycle, next_renewal_date, renewal_url: safeUrl(string(formData, 'renewal_url')), cancel_url: safeUrl(string(formData, 'cancel_url')) };
-  const result = id ? await supabase.from('subscriptions').update(payload).eq('id', id).eq('user_id', user.id) : await supabase.from('subscriptions').insert({ ...payload, user_id: user.id });
-  if (result.error) throw new Error(result.error.message); refreshAll(id || undefined);
+  
+  const payload: Record<string, unknown> = {
+    service_name,
+    category,
+    cost,
+    currency,
+    billing_cycle,
+    next_renewal_date,
+    autopay_status: validAutopayStatuses.includes(autopay_status) ? autopay_status : 'running',
+    renewal_url: safeUrl(string(formData, 'renewal_url')),
+    cancel_url: safeUrl(string(formData, 'cancel_url'))
+  };
+
+  let result = id 
+    ? await supabase.from('subscriptions').update(payload).eq('id', id).eq('user_id', user.id) 
+    : await supabase.from('subscriptions').insert({ ...payload, user_id: user.id });
+
+  if (result.error && result.error.message.includes('autopay_status')) {
+    delete payload.autopay_status;
+    result = id 
+      ? await supabase.from('subscriptions').update(payload).eq('id', id).eq('user_id', user.id) 
+      : await supabase.from('subscriptions').insert({ ...payload, user_id: user.id });
+  }
+
+  if (result.error) throw new Error(result.error.message); 
+  refreshAll(id || undefined);
+}
+
+export async function updateAutopayStatus(subscriptionId: string, autopay_status: AutopayStatus) {
+  if (!validAutopayStatuses.includes(autopay_status)) throw new Error('Invalid autopay status.');
+  const { supabase } = await currentUser();
+
+  const { data: sub } = await supabase
+    .from('subscriptions')
+    .select('next_renewal_date, billing_cycle, status')
+    .eq('id', subscriptionId)
+    .single();
+
+  const updateData: Record<string, unknown> = { autopay_status };
+
+  // If set to running and the renewal date has passed, advance it to the next cycle!
+  if (sub && autopay_status === 'running') {
+    const todayStr = getTodayDateStr();
+    if (sub.next_renewal_date <= todayStr && sub.status === 'active') {
+      const { advanceRenewalDate } = await import('@/lib/data');
+      updateData.next_renewal_date = advanceRenewalDate(sub.next_renewal_date, sub.billing_cycle);
+    }
+  }
+
+  const { error } = await supabase.from('subscriptions').update(updateData).eq('id', subscriptionId);
+  if (error) {
+    if (error.message.includes('autopay_status')) {
+      throw new Error(
+        'Please run supabase/migrations/002_add_autopay_status.sql in your Supabase SQL Editor to enable Autopay tracking!'
+      );
+    }
+    throw new Error(error.message);
+  }
+  refreshAll(subscriptionId);
 }
 
 export async function logUsage(subscriptionId: string) {
   const { supabase } = await currentUser();
-  const today = new Date().toISOString().slice(0, 10);
+  const today = getTodayDateStr();
   const { error } = await supabase.from('usage_logs').upsert({ subscription_id: subscriptionId, logged_date: today }, { onConflict: 'subscription_id,logged_date', ignoreDuplicates: true });
   if (error) throw new Error(error.message); refreshAll(subscriptionId);
 }

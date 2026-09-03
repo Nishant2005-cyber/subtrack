@@ -17,8 +17,8 @@ function inQuietHours(profile: Profile) {
 }
 
 async function deliver(profile: Profile, title: string, message: string) {
-  if (inQuietHours(profile)) return [] as ('email'|'sms')[];
-  const channels: ('email'|'sms')[] = [];
+  if (inQuietHours(profile)) return [] as ('email'|'sms'|'telegram')[];
+  const channels: ('email'|'sms'|'telegram')[] = [];
   if (profile.notify_email && profile.email && process.env.RESEND_API_KEY) {
     const email = new Resend(process.env.RESEND_API_KEY);
     const result = await email.emails.send({ from: process.env.RESEND_FROM_EMAIL || 'SubTrack <onboarding@resend.dev>', to: profile.email, subject: title, html: `<div style="font-family:Arial,sans-serif;line-height:1.5"><h2>${title}</h2><p>${message}</p><p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard">Open SubTrack</a></p></div>` });
@@ -31,7 +31,7 @@ async function deliver(profile: Profile, title: string, message: string) {
   if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
     try {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
-      await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      const tgRes = await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -40,6 +40,12 @@ async function deliver(profile: Profile, title: string, message: string) {
           parse_mode: 'Markdown',
         }),
       });
+      if (tgRes.ok) {
+        channels.push('telegram');
+      } else {
+        const errJson = await tgRes.json();
+        console.error('Telegram API error:', errJson);
+      }
     } catch (err) {
       console.error('Telegram notification failed:', err);
     }
