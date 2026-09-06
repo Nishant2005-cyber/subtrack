@@ -1,8 +1,11 @@
 'use server';
 
+import crypto from 'crypto';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { sendOtpEmail } from '@/lib/email';
 import { getTodayDateStr } from '@/lib/format';
 import type { AutopayStatus, Category, Cycle, Status } from '@/lib/types';
 
@@ -202,3 +205,161 @@ export async function saveSettings(formData: FormData) {
   const { error } = await supabase.from('users').update({ phone, notify_email: formData.get('notify_email') === 'on', notify_sms: formData.get('notify_sms') === 'on', reminder_days_before, quiet_hours_start: string(formData, 'quiet_hours_start') || null, quiet_hours_end: string(formData, 'quiet_hours_end') || null }).eq('id', user.id);
   if (error) throw new Error(error.message); revalidatePath('/settings'); revalidatePath('/dashboard');
 }
+
+// -------------------------------------------------------------
+// Sign Up Email OTP Verification Flow
+// -------------------------------------------------------------
+const AUTH_SECRET = process.env.CRON_SECRET || 'subtrack-otp-secret-key-2026';
+
+interface PendingSignup {
+  fullName: string;
+  email: string;
+  password: string;
+  code: string;
+  expiresAt: number;
+}
+
+function signToken(payload: PendingSignup): string {
+  const json = JSON.stringify(payload);
+  const base64 = Buffer.from(json).toString('base64url');
+  const signature = crypto.createHmac('sha256', AUTH_SECRET).update(base64).digest('hex');
+  return `${base64}.${signature}`;
+}
+
+function verifyToken(token: string): PendingSignup | null {
+  try {
+    const [base64, signature] = token.split('.');
+    if (!base64 || !signature) return null;
+    const expected = crypto.createHmac('sha256', AUTH_SECRET).update(base64).digest('hex');
+    if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+      return null;
+    }
+    const json = Buffer.from(base64, 'base64url').toString('utf8');
+    return JSON.parse(json) as PendingSignup;
+  } catch {
+    return null;
+  }
+}
+
+export async function sendSignupOtp(formData: FormData) {
+  const fullName = string(formData, 'fullName');
+  const email = string(formData, 'email').toLowerCase();
+  const password = string(formData, 'password');
+
+  if (!fullName || fullName.length < 2) {
+    throw new Error('Please enter your full name (at least 2 characters).');
+  }
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!email || !emailRegex.test(email) || email.includes('..')) {
+    throw new Error('Please enter a valid email address in the correct format (e.g. name@example.com).');
+  }
+
+  if (!password || password.length < 6) {
+    throw new Error('Password must be at least 6 characters long.');
+  }
+
+  const admin = createAdminClient();
+  const { data: userList } = await admin.auth.admin.listUsers({ perPage: 1000 });
+  const existing = userList?.users?.find((u) => u.email?.toLowerCase() === email);
+  if (existing) {
+    throw new Error('An account with this email address already exists. Please log in instead.');
+  }
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  const token = signToken({
+    fullName,
+    email,
+    password,
+    code,
+    expiresAt,
+  });
+
+  const emailResult = await sendOtpEmail({
+    to: email,
+    fullName,
+    otpCode: code,
+  });
+
+  return {
+    success: true,
+    token,
+    expiresAt,
+    devCode: code,
+    emailSent: emailResult.success,
+  };
+}
+
+export async function verifySignupOtp({ token, code }: { token: string; code: string }) {
+  const data = verifyToken(token);
+  if (!data) {
+    throw new Error('Verification session is invalid or has expired. Please enter your details again.');
+  }
+
+  if (Date.now() > data.expiresAt) {
+    throw new Error('The verification code has expired. Please click "Resend code" to receive a new one.');
+  }
+
+  if (data.code.trim() !== code.trim()) {
+    throw new Error('enter the code correctly');
+  }
+
+  const admin = createAdminClient();
+  const { data: newUser, error: createError } = await admin.auth.admin.createUser({
+    email: data.email,
+    password: data.password,
+    email_confirm: true,
+    user_metadata: { full_name: data.fullName },
+  });
+
+  if (createError) {
+    throw new Error(createError.message);
+  }
+
+  if (newUser?.user) {
+    await admin.from('users').upsert(
+      {
+        id: newUser.user.id,
+        reminder_days_before: 2,
+        notify_email: true,
+        notify_sms: false,
+      },
+      { onConflict: 'id', ignoreDuplicates: true }
+    );
+  }
+
+  return { success: true };
+}
+
+export async function resendSignupOtp({ token }: { token: string }) {
+  const data = verifyToken(token);
+  if (!data) {
+    throw new Error('Verification session is invalid or expired. Please enter your details again.');
+  }
+
+  const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const newExpiresAt = Date.now() + 10 * 60 * 1000;
+
+  const newToken = signToken({
+    ...data,
+    code: newCode,
+    expiresAt: newExpiresAt,
+  });
+
+  const emailResult = await sendOtpEmail({
+    to: data.email,
+    fullName: data.fullName,
+    otpCode: newCode,
+  });
+
+  return {
+    success: true,
+    token: newToken,
+    expiresAt: newExpiresAt,
+    devCode: newCode,
+    emailSent: emailResult.success,
+  };
+}
+
