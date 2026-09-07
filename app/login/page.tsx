@@ -537,46 +537,50 @@ export default function LoginPage() {
 
             {/* 3. Password Field */}
             {mode !== 'forgot' && (
-              <label className="block text-sm font-semibold">
-                <div className="flex items-center justify-between">
+              <div>
+                <label className="block text-sm font-semibold">
                   <span className="flex items-center gap-1.5">
                     <KeyRound size={14} className="text-stone-400" /> Password
                   </span>
-                  {mode === 'login' && (
+
+                  <div className="relative mt-2">
+                    <input
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      type={showPassword ? 'text' : 'password'}
+                      minLength={6}
+                      required
+                      placeholder={mode === 'signup' ? 'At least 6 characters' : 'Enter your password'}
+                      className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 pr-11 outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10 font-medium"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </label>
+
+                {mode === 'login' && (
+                  <div className="mt-2 text-right">
                     <button
                       type="button"
                       onClick={() => {
                         setMode('forgot');
                         setStatus(null);
                       }}
-                      className="text-xs font-semibold text-violet hover:underline"
+                      className="text-xs font-semibold text-violet hover:underline inline-block"
                     >
                       Forgot password?
                     </button>
-                  )}
-                </div>
-
-                <div className="relative mt-2">
-                  <input
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    type={showPassword ? 'text' : 'password'}
-                    minLength={6}
-                    required
-                    placeholder={mode === 'signup' ? 'At least 6 characters' : 'Enter your password'}
-                    className="w-full rounded-xl border border-stone-200 bg-white px-4 py-3 pr-11 outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10 font-medium"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-              </label>
+                  </div>
+                )}
+              </div>
             )}
+
 
             {/* Submit Action Button */}
             <button

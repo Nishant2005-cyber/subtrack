@@ -12,6 +12,8 @@ export function advanceRenewalDate(currentDateStr: string, cycle: 'monthly' | 'y
   return format(d, 'yyyy-MM-dd');
 }
 
+
+
 export async function getAppData() {
   const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { user: null, settings: null as UserSettings | null, subscriptions: [] as Subscription[], usage: [] as UsageLog[], notifications: [] as Notification[] };

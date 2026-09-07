@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
+import { format, parseISO, subDays, subMonths, subYears } from 'date-fns';
 import { ArrowLeft, ExternalLink, History, RefreshCw, ShieldCheck } from 'lucide-react';
 import { AppShell } from '@/components/app-shell';
 import { DetailActions } from '@/components/detail-actions';
@@ -8,6 +9,7 @@ import { AutopayBadge } from '@/components/autopay-badge';
 import { createClient } from '@/lib/supabase/server';
 import { categoryLabel, currency, dateLabel, dueLabel, getTodayDateStr } from '@/lib/format';
 import type { Subscription, UsageLog } from '@/lib/types';
+
 
 export default async function SubscriptionDetail({ params }: { params: { id: string } }) {
   const supabase = createClient();
@@ -24,6 +26,14 @@ export default async function SubscriptionDetail({ params }: { params: { id: str
   const usage = (logs ?? []) as UsageLog[];
   const today = getTodayDateStr();
   const autopay = sub.autopay_status ?? 'running';
+
+  const renewalDateObj = parseISO(sub.next_renewal_date);
+  const cycleEndStr = format(subDays(renewalDateObj, 1), 'dd-MM-yyyy');
+  const cycleStartStr = format(
+    sub.billing_cycle === 'yearly' ? subYears(renewalDateObj, 1) : subMonths(renewalDateObj, 1),
+    'dd-MM-yyyy'
+  );
+
 
   return (
     <AppShell email={user.email ?? null}>
@@ -65,8 +75,12 @@ export default async function SubscriptionDetail({ params }: { params: { id: str
           <div>
             <p className="text-xs font-bold text-stone-500">Next renewal</p>
             <p className="mt-1 text-lg font-bold">{dateLabel(sub.next_renewal_date)}</p>
-            <p className="mt-0.5 text-xs text-stone-400">{dueLabel(sub.next_renewal_date)}</p>
+            <p className="mt-0.5 text-xs text-stone-500 font-semibold">{dueLabel(sub.next_renewal_date)}</p>
+            <p className="mt-1 text-[11px] text-stone-400 font-mono">
+              Cycle: {cycleStartStr} → {cycleEndStr}
+            </p>
           </div>
+
 
           <div>
             <p className="text-xs font-bold text-stone-500">Autopay Mandate</p>
