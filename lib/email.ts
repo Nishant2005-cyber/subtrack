@@ -72,6 +72,21 @@ export async function sendOtpEmail({
 
     if (data.error) {
       console.error('Resend email error:', data.error);
+      const resendErr = data.error as { statusCode?: number; message?: string; name?: string };
+      const isDomainRestriction =
+        resendErr.statusCode === 403 ||
+        resendErr.message?.includes('only send testing emails to your own email address') ||
+        resendErr.name === 'validation_error';
+
+      if (isDomainRestriction) {
+        return {
+          success: false,
+          error:
+            "Resend Sandbox Restriction: 'onboarding@resend.dev' can only deliver emails to the account owner (nishukhandelwal012@gmail.com). To receive emails at other addresses, verify a custom domain at resend.com/domains.",
+        };
+      }
+
+
       return { success: false, error: data.error.message };
     }
 
@@ -84,3 +99,4 @@ export async function sendOtpEmail({
     };
   }
 }
+

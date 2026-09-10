@@ -182,7 +182,18 @@ export default function LoginPage() {
         setSignupStep('verify');
         setOtpCode('');
         setDevCode(res.devCode ?? null);
-        setStatus(null);
+
+        if (res.emailSent) {
+          setStatus({
+            type: 'success',
+            text: `A 6-digit security code was sent to ${email}. Please check your email inbox and spam folder.`,
+          });
+        } else {
+          setStatus({
+            type: 'error',
+            text: res.emailError || `Could not deliver email to ${email}.`,
+          });
+        }
       }
     } catch (err) {
       setBusy(false);
@@ -192,6 +203,7 @@ export default function LoginPage() {
       });
     }
   }
+
 
   // 3. Submit Signup Step 2 (Verify OTP -> Create Account -> Redirect to Login WITHOUT auto-login)
   async function submitVerifyOtp(e: React.FormEvent) {
@@ -252,15 +264,23 @@ export default function LoginPage() {
         setTimeLeft(Math.floor((res.expiresAt - Date.now()) / 1000));
         setResendCooldown(30);
         setDevCode(res.devCode ?? null);
-        setStatus({
-          type: 'success',
-          text: 'A fresh 6-digit verification code has been sent to your email.',
-        });
+        if (res.emailSent) {
+          setStatus({
+            type: 'success',
+            text: 'A fresh 6-digit verification code has been sent to your email inbox.',
+          });
+        } else {
+          setStatus({
+            type: 'error',
+            text: res.emailError || 'Failed to deliver resend email.',
+          });
+        }
       }
     } catch (err) {
       setBusy(false);
       setStatus({
         type: 'error',
+
         text: err instanceof Error ? err.message : 'Failed to resend code.',
       });
     }
@@ -376,22 +396,30 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* Development Helper Banner (in case Resend test domain restricts external emails) */}
+        {/* Fallback Banner (only displayed if email delivery failed due to Resend domain sandbox) */}
         {devCode && signupStep === 'verify' && (
-          <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-800 flex items-center justify-between">
-            <div>
-              <span className="font-bold">Security Code: </span>
-              <span className="font-mono font-extrabold text-sm tracking-wider">{devCode}</span>
+          <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 shadow-sm space-y-2">
+            <div className="flex items-start gap-2">
+              <span className="font-bold shrink-0">⚠️ Email Delivery Restricted:</span>
+              <p className="leading-relaxed">
+                Resend sandbox (<code>onboarding@resend.dev</code>) cannot deliver to unverified external domains. For local testing, your verification code is:
+              </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setOtpCode(devCode)}
-              className="text-[11px] font-bold text-amber-900 underline hover:text-ink"
-            >
-              Fill Code
-            </button>
+            <div className="flex items-center justify-between pt-1">
+              <span className="font-mono font-black text-sm tracking-widest text-amber-950 bg-amber-100/90 px-3 py-1 rounded-lg border border-amber-300">
+                {devCode}
+              </span>
+              <button
+                type="button"
+                onClick={() => setOtpCode(devCode)}
+                className="rounded-lg bg-amber-900 px-3 py-1.5 text-xs font-bold text-white transition hover:bg-black cursor-pointer shadow-xs"
+              >
+                Auto-fill Code
+              </button>
+            </div>
           </div>
         )}
+
 
         {/* ======================================================== */}
         {/* MODE: SIGNUP - STEP 2 (OTP VERIFICATION)                */}

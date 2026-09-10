@@ -7,7 +7,9 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendOtpEmail } from '@/lib/email';
 import { getTodayDateStr } from '@/lib/format';
+import { trackServerEvent } from '@/lib/analytics';
 import type { AutopayStatus, Category, Cycle, Status } from '@/lib/types';
+
 
 const validCategories: Category[] = ['streaming', 'software', 'gym', 'cloud', 'news', 'other'];
 const validCycles: Cycle[] = ['monthly', 'yearly'];
@@ -55,12 +57,18 @@ export async function saveSubscription(formData: FormData) {
   }
 
   if (result.error) throw new Error(result.error.message); 
+
+  trackServerEvent(id ? 'subscription_updated' : 'subscription_created', {
+    userId: user.id,
+    properties: { subscription_id: id || undefined, service_name, category, cost, currency, billing_cycle },
+  }).catch(() => {});
+
   refreshAll(id || undefined);
 }
 
 export async function updateAutopayStatus(subscriptionId: string, autopay_status: AutopayStatus) {
   if (!validAutopayStatuses.includes(autopay_status)) throw new Error('Invalid autopay status.');
-  const { supabase } = await currentUser();
+  const { supabase, user } = await currentUser();
 
   const { data: sub } = await supabase
     .from('subscriptions')
@@ -88,23 +96,42 @@ export async function updateAutopayStatus(subscriptionId: string, autopay_status
     }
     throw new Error(error.message);
   }
+
+  trackServerEvent('autopay_status_changed', {
+    userId: user.id,
+    properties: { subscription_id: subscriptionId, autopay_status },
+  }).catch(() => {});
+
   refreshAll(subscriptionId);
 }
 
 export async function logUsage(subscriptionId: string) {
-  const { supabase } = await currentUser();
+  const { supabase, user } = await currentUser();
   const today = getTodayDateStr();
   const { error } = await supabase.from('usage_logs').upsert({ subscription_id: subscriptionId, logged_date: today }, { onConflict: 'subscription_id,logged_date', ignoreDuplicates: true });
-  if (error) throw new Error(error.message); refreshAll(subscriptionId);
+  if (error) throw new Error(error.message); 
+
+  trackServerEvent('usage_logged', {
+    userId: user.id,
+    properties: { subscription_id: subscriptionId, logged_date: today },
+  }).catch(() => {});
+
+  refreshAll(subscriptionId);
 }
 
 export async function setSubscriptionStatus(subscriptionId: string, status: Status) {
   if (!validStatuses.includes(status)) throw new Error('Invalid subscription status.');
-  const { supabase } = await currentUser(); const { error } = await supabase.from('subscriptions').update({ status }).eq('id', subscriptionId);
+  const { supabase, user } = await currentUser(); const { error } = await supabase.from('subscriptions').update({ status }).eq('id', subscriptionId);
   if (error) throw new Error(error.message);
   if (status === 'canceled') {
     await supabase.from('notifications').update({ acknowledged: true }).eq('subscription_id', subscriptionId).eq('acknowledged', false);
   }
+
+  trackServerEvent('subscription_status_changed', {
+    userId: user.id,
+    properties: { subscription_id: subscriptionId, status },
+  }).catch(() => {});
+
   refreshAll(subscriptionId);
 }
 
@@ -113,9 +140,17 @@ export async function cancelSubscription(subscriptionId: string) {
 }
 
 export async function deleteSubscription(subscriptionId: string) {
-  const { supabase } = await currentUser(); const { error } = await supabase.from('subscriptions').delete().eq('id', subscriptionId);
-  if (error) throw new Error(error.message); refreshAll(subscriptionId);
+  const { supabase, user } = await currentUser(); const { error } = await supabase.from('subscriptions').delete().eq('id', subscriptionId);
+  if (error) throw new Error(error.message); 
+
+  trackServerEvent('subscription_deleted', {
+    userId: user.id,
+    properties: { subscription_id: subscriptionId },
+  }).catch(() => {});
+
+  refreshAll(subscriptionId);
 }
+
 
 export async function acknowledgeNotification(notificationId: string) {
   const { supabase } = await currentUser(); const { data, error: readError } = await supabase.from('notifications').select('subscription_id,type').eq('id', notificationId).single();
@@ -287,10 +322,13 @@ export async function sendSignupOtp(formData: FormData) {
     success: true,
     token,
     expiresAt,
-    devCode: code,
+    // Only provide devCode if email delivery was blocked or failed during development
+    devCode: !emailResult.success ? code : undefined,
     emailSent: emailResult.success,
+    emailError: emailResult.error,
   };
 }
+
 
 export async function verifySignupOtp({ token, code }: { token: string; code: string }) {
   const data = verifyToken(token);
@@ -358,8 +396,10 @@ export async function resendSignupOtp({ token }: { token: string }) {
     success: true,
     token: newToken,
     expiresAt: newExpiresAt,
-    devCode: newCode,
+    devCode: !emailResult.success ? newCode : undefined,
     emailSent: emailResult.success,
+    emailError: emailResult.error,
   };
 }
+
 

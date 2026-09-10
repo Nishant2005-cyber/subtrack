@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ToastProvider } from '@/components/toast';
+import { AnalyticsTracker } from '@/components/analytics-tracker';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -11,8 +12,12 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          <AnalyticsTracker />
+          {children}
+        </ToastProvider>
       </body>
     </html>
   );
 }
+
