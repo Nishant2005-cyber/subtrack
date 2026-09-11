@@ -62,7 +62,9 @@ if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(supabaseUrl, supabaseKey, {
   auth: { persistSession: false },
+  realtime: { createClient: () => null },
 });
+
 
 // Core tables required for app functionality vs optional telemetry tables
 const CORE_TABLES = ['users', 'subscriptions', 'usage_logs', 'notifications'];
