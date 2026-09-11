@@ -1,6 +1,6 @@
 import { differenceInCalendarDays, parseISO, subDays } from 'date-fns';
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import { sendEmail } from '@/lib/email';
 import twilio from 'twilio';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { upcomingTitlesForService } from '@/lib/tmdb';
@@ -19,11 +19,15 @@ function inQuietHours(profile: Profile) {
 async function deliver(profile: Profile, title: string, message: string) {
   if (inQuietHours(profile)) return [] as ('email'|'sms'|'telegram')[];
   const channels: ('email'|'sms'|'telegram')[] = [];
-  if (profile.notify_email && profile.email && process.env.RESEND_API_KEY) {
-    const email = new Resend(process.env.RESEND_API_KEY);
-    const result = await email.emails.send({ from: process.env.RESEND_FROM_EMAIL || 'SubTrack <onboarding@resend.dev>', to: profile.email, subject: title, html: `<div style="font-family:Arial,sans-serif;line-height:1.5"><h2>${title}</h2><p>${message}</p><p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard">Open SubTrack</a></p></div>` });
-    if (!result.error) channels.push('email');
+  if (profile.notify_email && profile.email) {
+    const result = await sendEmail({
+      to: profile.email,
+      subject: title,
+      html: `<div style="font-family:Arial,sans-serif;line-height:1.5"><h2>${title}</h2><p>${message}</p><p><a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard">Open SubTrack</a></p></div>`,
+    });
+    if (result.success) channels.push('email');
   }
+
   if (profile.notify_sms && profile.phone && process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_FROM_NUMBER) {
     const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
     try { await client.messages.create({ to: profile.phone, from: process.env.TWILIO_FROM_NUMBER, body: `${title}: ${message}` }); channels.push('sms'); } catch { /* Keep the in-app notification; a carrier failure must not break the entire run. */ }
