@@ -15,10 +15,13 @@ import {
   AlertCircle, 
   CheckCircle2,
   Eye,
-  EyeOff
+  EyeOff,
+  Gauge,
+  Laptop
 } from 'lucide-react';
 import { saveSettings, updateUserPassword, updateUserProfile } from '@/app/actions';
 import { useToast } from '@/components/toast';
+import { ThemeToggle } from '@/components/theme-toggle';
 import type { UserSettings } from '@/lib/types';
 
 export function ProfileForm({
@@ -427,7 +430,7 @@ export function ProfileForm({
                 />
               </label>
 
-              <label className="text-xs font-bold text-stone-700">
+              <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
                 End Time
                 <input
                   name="quiet_hours_end"
@@ -439,15 +442,79 @@ export function ProfileForm({
             </div>
           </div>
 
-          <div className="flex justify-end pt-2 border-t">
+          {/* Spending & Budget Limits */}
+          <div className="border-t border-stone-200 dark:border-stone-800 pt-5">
+            <div className="flex items-center gap-2 mb-3">
+              <Gauge size={15} className="text-emerald-600 dark:text-emerald-400" />
+              <h3 className="text-xs font-bold text-stone-700 dark:text-stone-300">Spending & Budget Limits</h3>
+            </div>
+            <p className="text-[11px] text-stone-500 dark:text-stone-400 mb-3">
+              Set spending limits to trigger visual progress indicators and over-budget warnings on your Dashboard and Spending pages.
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                Monthly Budget Cap
+                <input
+                  name="monthly_budget_cap"
+                  type="number"
+                  min="0"
+                  step="1"
+                  defaultValue={settings.monthly_budget_cap ?? ''}
+                  placeholder="e.g. 2500"
+                  className="field mt-1.5 font-mono"
+                />
+              </label>
+
+              <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                Annual Budget Cap
+                <input
+                  name="annual_budget_cap"
+                  type="number"
+                  min="0"
+                  step="1"
+                  defaultValue={settings.annual_budget_cap ?? ''}
+                  placeholder="e.g. 30000"
+                  className="field mt-1.5 font-mono"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="flex justify-end pt-2 border-t border-stone-200 dark:border-stone-800">
             <button
               disabled={settingsPending}
-              className="action bg-ink text-white hover:bg-black disabled:opacity-50 text-xs font-bold px-5 py-2.5"
+              className="action bg-ink text-white hover:bg-black dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white disabled:opacity-50 text-xs font-bold px-5 py-2.5"
             >
-              {settingsPending ? 'Saving preferences…' : 'Save Notification Preferences'}
+              {settingsPending ? 'Saving preferences…' : 'Save Preferences'}
             </button>
           </div>
         </form>
+      </section>
+
+      {/* 4. Display & Appearance */}
+      <section className="card overflow-hidden">
+        <div className="flex items-center gap-3 border-b border-stone-200 dark:border-stone-800 p-5">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-100 text-violet dark:bg-violet-950/60 dark:text-violet-300">
+            <Laptop size={19} />
+          </span>
+          <div>
+            <h2 className="panel-title">Display & Appearance</h2>
+            <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+              Customize SubTrack interface theme across your devices.
+            </p>
+          </div>
+        </div>
+
+        <div className="p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold text-stone-800 dark:text-stone-200">Interface Theme</p>
+            <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
+              Select Light, Dark, or System mode to automatically match your device settings.
+            </p>
+          </div>
+          <ThemeToggle variant="segmented" />
+        </div>
       </section>
     </div>
   );

@@ -13,8 +13,10 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AppLogo } from '@/components/app-logo';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 type SidebarMode = 'expanded' | 'collapsed' | 'hover';
+
 
 const links = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -71,11 +73,11 @@ function SidebarControlDropdown({
           e.stopPropagation();
           onToggle();
         }}
-        className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300/80 bg-white/80 text-stone-600 shadow-sm transition hover:bg-white hover:text-ink hover:border-stone-400"
+        className="flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300/80 bg-white/80 text-stone-600 shadow-sm transition hover:bg-white hover:text-ink hover:border-stone-400 dark:border-stone-700/80 dark:bg-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-white"
         title="Sidebar control"
         aria-label="Sidebar control"
       >
-        <SidebarPanelIcon className="text-stone-600" />
+        <SidebarPanelIcon className="text-stone-600 dark:text-stone-300" />
       </button>
 
       {isOpen && (
@@ -90,9 +92,9 @@ function SidebarControlDropdown({
           />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute bottom-full mb-2 left-0 w-44 rounded-2xl border border-stone-200 bg-white p-1.5 text-ink shadow-xl shadow-stone-900/10 z-50 animate-in fade-in zoom-in-95 duration-100"
+            className="absolute bottom-full mb-2 left-0 w-44 rounded-2xl border border-stone-200 bg-white p-1.5 text-ink shadow-xl shadow-stone-900/10 dark:border-stone-800 dark:bg-stone-900 dark:text-stone-100 z-50 animate-in fade-in zoom-in-95 duration-100"
           >
-            <div className="px-3 py-1.5 text-[11px] font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100 mb-1">
+            <div className="px-3 py-1.5 text-[11px] font-bold text-stone-400 uppercase tracking-wider border-b border-stone-100 dark:border-stone-800 mb-1">
               Sidebar control
             </div>
             <div className="space-y-0.5">
@@ -109,13 +111,13 @@ function SidebarControlDropdown({
                     onClick={() => onSelectMode(item.id as SidebarMode)}
                     className={`flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-semibold text-left transition ${
                       isSelected
-                        ? 'bg-stone-100 text-ink'
-                        : 'text-stone-600 hover:bg-stone-50 hover:text-ink'
+                        ? 'bg-stone-100 text-ink dark:bg-stone-800 dark:text-stone-100'
+                        : 'text-stone-600 hover:bg-stone-50 hover:text-ink dark:text-stone-400 dark:hover:bg-stone-800/60 dark:hover:text-stone-200'
                     }`}
                   >
                     <span className="grid w-3 place-items-center">
                       {isSelected ? (
-                        <span className="h-1.5 w-1.5 rounded-full bg-ink" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-ink dark:bg-stone-200" />
                       ) : null}
                     </span>
                     <span>{item.label}</span>
@@ -187,8 +189,8 @@ export function AppShell({
                 : 'gap-3 px-3 py-2.5'
             } ${
               isActive
-                ? 'bg-white text-ink shadow-sm'
-                : 'text-stone-500 hover:bg-white/60 hover:text-ink'
+                ? 'bg-white text-ink shadow-sm dark:bg-[#20201d] dark:text-stone-100'
+                : 'text-stone-500 hover:bg-white/60 hover:text-ink dark:text-stone-400 dark:hover:bg-[#20201d]/60 dark:hover:text-stone-200'
             }`}
           >
             <Icon size={19} className="shrink-0" />
@@ -200,7 +202,11 @@ export function AppShell({
   );
 
   const renderFooter = (compact: boolean) => (
-    <div className="mt-auto border-t border-stone-200 pt-4">
+    <div
+      className={`mt-auto border-t border-stone-200 dark:border-stone-800 pt-4 flex ${
+        compact ? 'flex-col items-center gap-2' : 'items-center justify-between px-1'
+      }`}
+    >
       <SidebarControlDropdown
         mode={mode}
         onSelectMode={handleSelectMode}
@@ -209,6 +215,7 @@ export function AppShell({
         onClose={() => setMenuOpen(false)}
         isCompact={compact}
       />
+      <ThemeToggle variant="compact" />
     </div>
   );
 
@@ -226,9 +233,9 @@ export function AppShell({
         onMouseLeave={() => {
           if (isHoverMode) setIsHovered(false);
         }}
-        className={`sticky top-0 hidden h-screen flex-col border-r border-stone-200 bg-[#f1f2ed] transition-all duration-300 lg:flex ${
+        className={`sticky top-0 hidden h-screen flex-col border-r border-stone-200 bg-[#f1f2ed] dark:border-stone-800 dark:bg-[#151513] transition-all duration-300 lg:flex ${
           isHoverMode && isHovered
-            ? 'absolute left-0 top-0 z-30 w-[240px] p-5 shadow-2xl border-r-stone-300'
+            ? 'absolute left-0 top-0 z-30 w-[240px] p-5 shadow-2xl border-r-stone-300 dark:border-r-stone-700'
             : isCompact
             ? 'w-[76px] p-3'
             : 'w-[240px] p-5'
@@ -246,48 +253,55 @@ export function AppShell({
         {/* Navigation Items */}
         {renderNavLinks(isCompact)}
 
-        {/* Bottom: Sidebar Control Dropdown (Replaced Logout & Email) */}
+        {/* Bottom: Sidebar Control Dropdown & Theme Toggle */}
         {renderFooter(isCompact)}
       </aside>
 
       {/* Mobile Top Header */}
-      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-[#f7f7f3]/90 px-5 backdrop-blur lg:hidden">
+      <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-stone-200 bg-[#f7f7f3]/90 px-5 backdrop-blur dark:border-stone-800 dark:bg-[#121210]/90 lg:hidden">
         <AppLogo size="sm" href="/dashboard" />
-        <button
-          onClick={() => setOpen(true)}
-          aria-label="Open menu"
-          className="rounded-lg p-2 text-stone-700 hover:bg-stone-100"
-        >
-          <Menu size={21} />
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle variant="compact" />
+          <button
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+            className="rounded-lg p-2 text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800"
+          >
+            <Menu size={21} />
+          </button>
+        </div>
       </header>
 
       {/* Mobile Drawer */}
       {open && (
         <div
-          className="fixed inset-0 z-50 bg-black/30 lg:hidden"
+          className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm lg:hidden"
           onClick={() => setOpen(false)}
         >
           <aside
             onClick={(e) => e.stopPropagation()}
-            className="flex h-full w-72 flex-col bg-[#f1f2ed] p-5 shadow-2xl"
+            className="flex h-full w-72 flex-col bg-[#f1f2ed] dark:bg-[#151513] p-5 shadow-2xl border-r border-stone-200 dark:border-stone-800"
           >
             <div className="mb-8 flex items-center justify-between">
               <AppLogo size="md" href="/dashboard" />
               <button
                 onClick={() => setOpen(false)}
-                className="rounded-lg p-2 text-stone-500 hover:bg-stone-200"
+                className="rounded-lg p-2 text-stone-500 hover:bg-stone-200 dark:text-stone-400 dark:hover:bg-stone-800"
                 aria-label="Close menu"
               >
                 <X size={20} />
               </button>
             </div>
             {renderNavLinks(false)}
-            <div className="mt-auto border-t border-stone-200 pt-4">
+            <div className="mt-auto border-t border-stone-200 dark:border-stone-800 pt-4 space-y-3">
+              <div className="flex items-center justify-between px-1">
+                <span className="text-xs font-semibold text-stone-500 dark:text-stone-400">Theme</span>
+                <ThemeToggle variant="compact" />
+              </div>
               <Link
                 href="/settings"
                 onClick={() => setOpen(false)}
-                className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-semibold text-stone-600 bg-white/70"
+                className="flex items-center justify-between rounded-xl px-3 py-2.5 text-xs font-semibold text-stone-600 bg-white/70 dark:bg-stone-800/70 dark:text-stone-300"
               >
                 <span>Settings & Account</span>
                 <span className="text-[10px] text-stone-400 truncate max-w-[120px]">{email}</span>

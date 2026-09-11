@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { ToastProvider } from '@/components/toast';
 import { AnalyticsTracker } from '@/components/analytics-tracker';
+import { ThemeProvider, ThemeScript } from '@/components/theme-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -10,14 +11,18 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body>
-        <ToastProvider>
-          <AnalyticsTracker />
-          {children}
-        </ToastProvider>
+        <ThemeProvider>
+          <ToastProvider>
+            <AnalyticsTracker />
+            {children}
+          </ToastProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
-

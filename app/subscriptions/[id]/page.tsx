@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import { format, parseISO, subDays, subMonths, subYears } from 'date-fns';
-import { ArrowLeft, ExternalLink, History, RefreshCw, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ExternalLink, History, RefreshCw, TrendingUp, Users } from 'lucide-react';
 import { AppShell } from '@/components/app-shell';
 import { DetailActions } from '@/components/detail-actions';
 import { SubscriptionForm } from '@/components/subscription-form';
 import { AutopayBadge } from '@/components/autopay-badge';
+import { SharedMembersCard } from '@/components/shared-members-card';
+import { PriceHistoryCard } from '@/components/price-history-card';
 import { createClient } from '@/lib/supabase/server';
 import { categoryLabel, currency, dateLabel, dueLabel, getTodayDateStr } from '@/lib/format';
 import type { Subscription, UsageLog } from '@/lib/types';
@@ -34,6 +36,10 @@ export default async function SubscriptionDetail({ params }: { params: { id: str
     'dd-MM-yyyy'
   );
 
+  const latestPriceChange = sub.price_history && sub.price_history.length > 0
+    ? sub.price_history[0]
+    : null;
+
 
   return (
     <AppShell email={user.email ?? null}>
@@ -52,6 +58,16 @@ export default async function SubscriptionDetail({ params }: { params: { id: str
               <span className={`pill ${sub.status === 'active' ? 'bg-lime text-ink font-semibold' : sub.status === 'canceled' ? 'bg-rose-100 text-rose-700 font-semibold' : 'bg-stone-100 text-stone-600'}`}>
                 {categoryLabel(sub.status)}
               </span>
+              {sub.is_shared && (
+                <span className="pill bg-violet-100 text-violet-800 dark:bg-violet-950/60 dark:text-violet-300 font-semibold flex items-center gap-1">
+                  <Users size={12} /> Shared ({sub.split_count || 2} ways)
+                </span>
+              )}
+              {latestPriceChange && latestPriceChange.percentage > 0 && (
+                <span className="pill bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 font-semibold flex items-center gap-1">
+                  <TrendingUp size={12} /> +{latestPriceChange.percentage}% Hike
+                </span>
+              )}
               {sub.status !== 'canceled' && (
                 <AutopayBadge
                   subscriptionId={sub.id}
@@ -64,6 +80,11 @@ export default async function SubscriptionDetail({ params }: { params: { id: str
             <h1 className="font-serif text-4xl tracking-tight">{sub.service_name}</h1>
             <p className="mt-2 text-sm text-stone-500">
               {currency(Number(sub.cost), sub.currency)} / {sub.billing_cycle} · {dueLabel(sub.next_renewal_date)}
+              {sub.is_shared && sub.my_share ? (
+                <span className="ml-1.5 font-bold text-violet dark:text-violet-400">
+                  (Your share: {currency(Number(sub.my_share), sub.currency)})
+                </span>
+              ) : null}
             </p>
           </div>
 
@@ -102,6 +123,29 @@ export default async function SubscriptionDetail({ params }: { params: { id: str
         {/* Action Buttons */}
         <section className="mt-5">
           <DetailActions id={sub.id} status={sub.status} usedToday={usage.some((l) => l.logged_date === today)} />
+        </section>
+
+        {/* Shared Plan Multi-User Split Section */}
+        {sub.is_shared && (
+          <section className="mt-7">
+            <SharedMembersCard
+              subscriptionId={sub.id}
+              cost={Number(sub.cost)}
+              currency={sub.currency}
+              splitCount={sub.split_count || 2}
+              myShare={Number(sub.my_share ?? (sub.cost / (sub.split_count || 1)))}
+              members={sub.shared_members ?? []}
+            />
+          </section>
+        )}
+
+        {/* Price-Hike History Section */}
+        <section className="mt-7">
+          <PriceHistoryCard
+            currentCost={Number(sub.cost)}
+            currency={sub.currency}
+            priceHistory={sub.price_history}
+          />
         </section>
 
         {/* Links & Autopay Details */}

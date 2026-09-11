@@ -1,11 +1,133 @@
 import { redirect } from 'next/navigation';
 import { AppShell } from '@/components/app-shell';
 import { SpendingChart } from '@/components/spending-chart';
+import { BudgetMeter } from '@/components/budget-meter';
+import { ExportModal } from '@/components/export-modal';
 import { getAppData } from '@/lib/data';
 import { categoryLabel, currency, monthlyCost } from '@/lib/format';
 
 export default async function SpendingPage() {
-  const { user, subscriptions } = await getAppData(); if (!user) redirect('/login'); const active=subscriptions.filter(s=>s.status==='active'); const code=active[0]?.currency ?? 'INR'; const total=active.reduce((n,s)=>n+monthlyCost(Number(s.cost),s.billing_cycle),0); const yearly=total*12;
-  const totals = active.reduce<Record<string,number>>((acc,s)=>{acc[s.category]=(acc[s.category]||0)+monthlyCost(Number(s.cost),s.billing_cycle);return acc},{}); const chart=Object.entries(totals).map(([name,value])=>({name,value}));
-  return <AppShell email={user.email ?? null}><div className="mx-auto max-w-7xl px-5 py-7 sm:px-8 lg:px-10"><header><p className="text-sm text-stone-500">See the bigger picture</p><h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl">Spending</h1></header><section className="mt-7 grid gap-3 sm:grid-cols-3"><article className="card p-5"><p className="text-xs font-bold text-stone-500">Monthly equivalent</p><p className="mt-2 text-3xl font-bold tracking-tight">{currency(total,code)}</p><p className="mt-2 text-xs text-stone-500">Across active subscriptions</p></article><article className="card p-5"><p className="text-xs font-bold text-stone-500">Annual commitment</p><p className="mt-2 text-3xl font-bold tracking-tight">{currency(yearly,code)}</p><p className="mt-2 text-xs text-stone-500">If you keep everything for a year</p></article><article className="card p-5"><p className="text-xs font-bold text-stone-500">Biggest category</p><p className="mt-2 text-3xl font-bold tracking-tight">{chart.length ? categoryLabel([...chart].sort((a,b)=>b.value-a.value)[0].name) : '—'}</p><p className="mt-2 text-xs text-stone-500">Your top monthly subscription type</p></article></section><section className="card mt-7 p-5 sm:p-7"><div className="mb-3"><h2 className="panel-title">Monthly spend by category</h2><p className="mt-1 text-sm text-stone-500">Yearly plans are shown as their monthly equivalent.</p></div><SpendingChart data={chart} currencyCode={code}/></section><section className="card mt-7 overflow-hidden"><div className="border-b px-5 py-5"><h2 className="panel-title">All active subscriptions</h2></div><div className="divide-y">{active.map(s=><div key={s.id} className="flex items-center justify-between gap-4 px-5 py-4"><div><p className="font-bold">{s.service_name}</p><p className="mt-0.5 text-xs text-stone-500">{categoryLabel(s.category)} · billed {s.billing_cycle}</p></div><b className="text-sm">{currency(Number(s.cost),s.currency)}</b></div>)}{!active.length&&<p className="p-8 text-center text-sm text-stone-500">No active subscriptions to show.</p>}</div></section></div></AppShell>;
+  const { user, settings, subscriptions } = await getAppData();
+  if (!user) redirect('/login');
+
+  const active = subscriptions.filter((s) => s.status === 'active');
+  const code = active[0]?.currency ?? 'INR';
+  const total = active.reduce(
+    (n, s) => n + monthlyCost(Number(s.cost), s.billing_cycle),
+    0
+  );
+  const yearly = total * 12;
+
+  const totals = active.reduce<Record<string, number>>((acc, s) => {
+    acc[s.category] =
+      (acc[s.category] || 0) + monthlyCost(Number(s.cost), s.billing_cycle);
+    return acc;
+  }, {});
+  const chart = Object.entries(totals).map(([name, value]) => ({
+    name,
+    value,
+  }));
+
+  return (
+    <AppShell email={user.email ?? null}>
+      <div className="mx-auto max-w-7xl px-5 py-7 sm:px-8 lg:px-10">
+        <header className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-sm text-stone-500 dark:text-stone-400">See the bigger picture</p>
+            <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl">Spending & Analytics</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <ExportModal
+              subscriptions={subscriptions}
+              monthlySpend={total}
+              currencyCode={code}
+            />
+          </div>
+        </header>
+
+        {/* 3 Summary Cards */}
+        <section className="mt-7 grid gap-3 sm:grid-cols-3">
+          <article className="card p-5">
+            <p className="text-xs font-bold text-stone-500 dark:text-stone-400">Monthly equivalent</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight font-mono text-emerald-700 dark:text-emerald-400">
+              {currency(total, code)}
+            </p>
+            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">Across active subscriptions</p>
+          </article>
+          <article className="card p-5">
+            <p className="text-xs font-bold text-stone-500 dark:text-stone-400">Annual commitment</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight font-mono text-stone-900 dark:text-stone-100">
+              {currency(yearly, code)}
+            </p>
+            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">If you keep everything for a year</p>
+          </article>
+          <article className="card p-5">
+            <p className="text-xs font-bold text-stone-500 dark:text-stone-400">Biggest category</p>
+            <p className="mt-2 text-3xl font-bold tracking-tight">
+              {chart.length
+                ? categoryLabel([...chart].sort((a, b) => b.value - a.value)[0].name)
+                : '—'}
+            </p>
+            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">Your top monthly subscription type</p>
+          </article>
+        </section>
+
+        {/* Budget Cap Widget */}
+        <section className="mt-5">
+          <BudgetMeter
+            monthlySpent={total}
+            currencyCode={code}
+            monthlyCap={settings?.monthly_budget_cap}
+            annualCap={settings?.annual_budget_cap}
+          />
+        </section>
+
+        {/* Category Breakdown Chart */}
+        <section className="card mt-7 p-5 sm:p-7">
+          <div className="mb-3">
+            <h2 className="panel-title">Monthly spend by category</h2>
+            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+              Yearly plans are shown as their monthly equivalent.
+            </p>
+          </div>
+          <SpendingChart data={chart} currencyCode={code} />
+        </section>
+
+        {/* Active Subscriptions List */}
+        <section className="card mt-7 overflow-hidden">
+          <div className="border-b border-stone-200 dark:border-stone-800 px-5 py-5">
+            <h2 className="panel-title">All active subscriptions</h2>
+          </div>
+          <div className="divide-y divide-stone-100 dark:divide-stone-800">
+            {active.map((s) => (
+              <div
+                key={s.id}
+                className="flex items-center justify-between gap-4 px-5 py-4"
+              >
+                <div>
+                  <p className="font-bold text-stone-900 dark:text-stone-100">{s.service_name}</p>
+                  <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">
+                    {categoryLabel(s.category)} · billed {s.billing_cycle}
+                    {s.is_shared && (
+                      <span className="ml-1 text-violet dark:text-violet-400 font-semibold">
+                        (Shared {s.split_count || 2} ways)
+                      </span>
+                    )}
+                  </p>
+                </div>
+                <b className="text-sm font-mono text-stone-900 dark:text-stone-100">
+                  {currency(Number(s.cost), s.currency)}
+                </b>
+              </div>
+            ))}
+            {!active.length && (
+              <p className="p-8 text-center text-sm text-stone-500 dark:text-stone-400">
+                No active subscriptions to show.
+              </p>
+            )}
+          </div>
+        </section>
+      </div>
+    </AppShell>
+  );
 }

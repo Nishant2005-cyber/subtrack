@@ -3,5 +3,56 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base { * { @apply border-stone-200; } body { @apply bg-[#f7f7f3] font-sans text-ink antialiased; } button, a { -webkit-tap-highlight-color: transparent; } }
-@layer components { .card { @apply rounded-2xl border bg-white shadow-card; } .panel-title { @apply text-base font-bold tracking-tight; } .subtle { @apply text-sm text-stone-500; } .pill { @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold; } .field { @apply mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10; } .action { @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition; } }
+@layer base {
+  * {
+    @apply border-stone-200 dark:border-stone-800;
+  }
+  body {
+    @apply bg-[#f7f7f3] text-[#20211d] font-sans antialiased transition-colors duration-200;
+  }
+  .dark body {
+    @apply bg-[#0f0f0e] text-[#f5f5f4];
+  }
+  button, a {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-stone-200 bg-white shadow-card transition-colors duration-200 dark:border-stone-800/80 dark:bg-[#181816] dark:shadow-none;
+  }
+  .panel-title {
+    @apply text-base font-bold tracking-tight text-ink dark:text-stone-100;
+  }
+  .subtle {
+    @apply text-sm text-stone-500 dark:text-stone-400;
+  }
+  .pill {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold;
+  }
+  .field {
+    @apply mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10 dark:border-stone-800 dark:bg-[#121210] dark:text-stone-100 dark:focus:border-violet/60;
+  }
+  .action {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition;
+  }
+}
+
+@media print {
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
+  }
+  .no-print, aside, header, nav, button:not(.print-include) {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #e5e5e5 !important;
+    break-inside: avoid;
+  }
+}

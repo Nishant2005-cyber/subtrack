@@ -32,6 +32,57 @@ export async function saveSubscription(formData: FormData) {
   const cost = Number(string(formData, 'cost')); const currency = string(formData, 'currency').toUpperCase(); const next_renewal_date = string(formData, 'next_renewal_date');
   const autopay_status = (string(formData, 'autopay_status') || 'running') as AutopayStatus;
   if (!service_name || !category || category.length > 50 || !validCycles.includes(billing_cycle) || !Number.isFinite(cost) || cost < 0 || !/^[A-Z]{3}$/.test(currency) || !/^\d{4}-\d{2}-\d{2}$/.test(next_renewal_date)) throw new Error('Please provide valid subscription details.');
+
+  // Shared plan fields
+  const is_shared = formData.get('is_shared') === 'true' || formData.get('is_shared') === 'on';
+  const split_count_raw = Number(string(formData, 'split_count'));
+  const split_count = is_shared && split_count_raw > 0 ? split_count_raw : 1;
+  const my_share_raw = string(formData, 'my_share');
+  const my_share = is_shared
+    ? (my_share_raw ? Number(my_share_raw) : Number((cost / split_count).toFixed(2)))
+    : cost;
+
+  let shared_members: any[] = [];
+  const shared_members_raw = string(formData, 'shared_members');
+  if (is_shared && shared_members_raw) {
+    try {
+      const parsed = JSON.parse(shared_members_raw);
+      if (Array.isArray(parsed)) shared_members = parsed;
+    } catch {
+      // ignore
+    }
+  }
+
+  // Price hike tracking
+  let price_history: any[] = [];
+  if (id) {
+    const { data: existingSub } = await supabase
+      .from('subscriptions')
+      .select('cost, currency, price_history')
+      .eq('id', id)
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (existingSub) {
+      if (Array.isArray(existingSub.price_history)) {
+        price_history = [...existingSub.price_history];
+      }
+      const oldCost = Number(existingSub.cost);
+      if (Number.isFinite(oldCost) && oldCost > 0 && Math.abs(cost - oldCost) >= 0.01) {
+        const diff = Number((cost - oldCost).toFixed(2));
+        const percentage = Number((((cost - oldCost) / oldCost) * 100).toFixed(1));
+        const changeEntry = {
+          date: getTodayDateStr(),
+          old_cost: oldCost,
+          new_cost: cost,
+          diff,
+          percentage,
+          currency,
+        };
+        price_history.unshift(changeEntry);
+      }
+    }
+  }
   
   const payload: Record<string, unknown> = {
     service_name,
@@ -42,25 +93,40 @@ export async function saveSubscription(formData: FormData) {
     next_renewal_date,
     autopay_status: validAutopayStatuses.includes(autopay_status) ? autopay_status : 'running',
     renewal_url: safeUrl(string(formData, 'renewal_url')),
-    cancel_url: safeUrl(string(formData, 'cancel_url'))
+    cancel_url: safeUrl(string(formData, 'cancel_url')),
+    is_shared,
+    split_count,
+    my_share,
+    shared_members,
+    price_history,
   };
 
   let result = id 
     ? await supabase.from('subscriptions').update(payload).eq('id', id).eq('user_id', user.id) 
     : await supabase.from('subscriptions').insert({ ...payload, user_id: user.id });
 
-  if (result.error && result.error.message.includes('autopay_status')) {
-    delete payload.autopay_status;
-    result = id 
-      ? await supabase.from('subscriptions').update(payload).eq('id', id).eq('user_id', user.id) 
-      : await supabase.from('subscriptions').insert({ ...payload, user_id: user.id });
+  if (result.error) {
+    const errorMsg = result.error.message.toLowerCase();
+    const optionalCols = ['autopay_status', 'is_shared', 'split_count', 'my_share', 'shared_members', 'price_history'];
+    let modified = false;
+    for (const col of optionalCols) {
+      if (errorMsg.includes(col)) {
+        delete payload[col];
+        modified = true;
+      }
+    }
+    if (modified) {
+      result = id 
+        ? await supabase.from('subscriptions').update(payload).eq('id', id).eq('user_id', user.id) 
+        : await supabase.from('subscriptions').insert({ ...payload, user_id: user.id });
+    }
   }
 
   if (result.error) throw new Error(result.error.message); 
 
   trackServerEvent(id ? 'subscription_updated' : 'subscription_created', {
     userId: user.id,
-    properties: { subscription_id: id || undefined, service_name, category, cost, currency, billing_cycle },
+    properties: { subscription_id: id || undefined, service_name, category, cost, currency, billing_cycle, is_shared },
   }).catch(() => {});
 
   refreshAll(id || undefined);
@@ -233,12 +299,86 @@ export async function updateUserPassword(formData: FormData) {
   if (error) throw new Error(error.message);
 }
 
+export async function toggleMemberPayment(subscriptionId: string, memberId: string, paid: boolean) {
+  const { supabase, user } = await currentUser();
+  const { data: sub, error: fetchError } = await supabase
+    .from('subscriptions')
+    .select('shared_members')
+    .eq('id', subscriptionId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (fetchError || !sub) throw new Error('Subscription not found.');
+
+  const members = Array.isArray(sub.shared_members) ? sub.shared_members : [];
+  const updatedMembers = members.map((m: any) => {
+    if (m.id === memberId) {
+      return {
+        ...m,
+        paid,
+        paid_at: paid ? new Date().toISOString() : undefined,
+      };
+    }
+    return m;
+  });
+
+  const { error: updateError } = await supabase
+    .from('subscriptions')
+    .update({ shared_members: updatedMembers })
+    .eq('id', subscriptionId)
+    .eq('user_id', user.id);
+
+  if (updateError) throw new Error(updateError.message);
+  refreshAll(subscriptionId);
+}
+
 export async function saveSettings(formData: FormData) {
-  const { supabase, user } = await currentUser(); const reminder_days_before = Number(string(formData, 'reminder_days_before'));
+  const { supabase, user } = await currentUser();
+  const reminder_days_before = Number(string(formData, 'reminder_days_before'));
   if (![1,2,3,7].includes(reminder_days_before)) throw new Error('Choose a valid reminder window.');
   const phone = string(formData, 'phone') || null;
-  const { error } = await supabase.from('users').update({ phone, notify_email: formData.get('notify_email') === 'on', notify_sms: formData.get('notify_sms') === 'on', reminder_days_before, quiet_hours_start: string(formData, 'quiet_hours_start') || null, quiet_hours_end: string(formData, 'quiet_hours_end') || null }).eq('id', user.id);
-  if (error) throw new Error(error.message); revalidatePath('/settings'); revalidatePath('/dashboard');
+
+  const monthly_budget_cap_raw = string(formData, 'monthly_budget_cap');
+  const annual_budget_cap_raw = string(formData, 'annual_budget_cap');
+  const monthly_budget_cap = monthly_budget_cap_raw ? Number(monthly_budget_cap_raw) : null;
+  const annual_budget_cap = annual_budget_cap_raw ? Number(annual_budget_cap_raw) : null;
+
+  const payload: Record<string, unknown> = {
+    phone,
+    notify_email: formData.get('notify_email') === 'on',
+    notify_sms: formData.get('notify_sms') === 'on',
+    reminder_days_before,
+    quiet_hours_start: string(formData, 'quiet_hours_start') || null,
+    quiet_hours_end: string(formData, 'quiet_hours_end') || null,
+    monthly_budget_cap: Number.isFinite(monthly_budget_cap) && (monthly_budget_cap ?? 0) > 0 ? monthly_budget_cap : null,
+    annual_budget_cap: Number.isFinite(annual_budget_cap) && (annual_budget_cap ?? 0) > 0 ? annual_budget_cap : null,
+  };
+
+  let { error } = await supabase.from('users').update(payload).eq('id', user.id);
+  if (error && (error.message.includes('monthly_budget_cap') || error.message.includes('annual_budget_cap'))) {
+    delete payload.monthly_budget_cap;
+    delete payload.annual_budget_cap;
+    const retry = await supabase.from('users').update(payload).eq('id', user.id);
+    error = retry.error;
+  }
+  if (error) throw new Error(error.message);
+  revalidatePath('/settings');
+  revalidatePath('/dashboard');
+  revalidatePath('/spending');
+}
+
+export async function updateBudgetCaps(monthlyCap: number | null, annualCap: number | null) {
+  const { supabase, user } = await currentUser();
+  const payload: Record<string, unknown> = {
+    monthly_budget_cap: monthlyCap !== null && Number.isFinite(monthlyCap) && monthlyCap > 0 ? monthlyCap : null,
+    annual_budget_cap: annualCap !== null && Number.isFinite(annualCap) && annualCap > 0 ? annualCap : null,
+  };
+  let { error } = await supabase.from('users').update(payload).eq('id', user.id);
+  if (error && (error.message.includes('monthly_budget_cap') || error.message.includes('annual_budget_cap'))) {
+    throw new Error('Please run supabase/migrations/004_optional_features.sql in Supabase to enable Budget Caps.');
+  }
+  if (error) throw new Error(error.message);
+  refreshAll();
 }
 
 // -------------------------------------------------------------
