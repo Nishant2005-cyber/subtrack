@@ -47,9 +47,27 @@ export async function saveSubscription(formData: FormData) {
   if (is_shared && shared_members_raw) {
     try {
       const parsed = JSON.parse(shared_members_raw);
-      if (Array.isArray(parsed)) shared_members = parsed;
-    } catch {
-      // ignore
+      if (
+        Array.isArray(parsed) &&
+        parsed.every(
+          (m) =>
+            m &&
+            typeof m === 'object' &&
+            typeof m.id === 'string' &&
+            m.id.trim() !== '' &&
+            typeof m.name === 'string' &&
+            m.name.trim() !== ''
+        )
+      ) {
+        shared_members = parsed;
+      } else {
+        throw new Error('Invalid shared members format. Each member must have a valid id and name.');
+      }
+    } catch (e) {
+      if (e instanceof Error && e.message.startsWith('Invalid shared members')) {
+        throw e;
+      }
+      throw new Error('Invalid shared members JSON payload.');
     }
   }
 
@@ -68,7 +86,7 @@ export async function saveSubscription(formData: FormData) {
         price_history = [...existingSub.price_history];
       }
       const oldCost = Number(existingSub.cost);
-      if (Number.isFinite(oldCost) && oldCost > 0 && Math.abs(cost - oldCost) >= 0.01) {
+      if (existingSub.currency === currency && Number.isFinite(oldCost) && oldCost > 0 && Math.abs(cost - oldCost) >= 0.01) {
         const diff = Number((cost - oldCost).toFixed(2));
         const percentage = Number((((cost - oldCost) / oldCost) * 100).toFixed(1));
         const changeEntry = {
@@ -107,9 +125,17 @@ export async function saveSubscription(formData: FormData) {
 
   if (result.error) {
     const errorMsg = result.error.message.toLowerCase();
-    const optionalCols = ['autopay_status', 'is_shared', 'split_count', 'my_share', 'shared_members', 'price_history'];
+    const sharedCols = ['is_shared', 'split_count', 'my_share', 'shared_members', 'price_history'];
+    const hasSharedMissing = sharedCols.some((col) => errorMsg.includes(col));
+    if (hasSharedMissing) {
+      throw new Error(
+        'Database columns for shared plans or price history are missing. Please run migration 004_optional_features.sql before saving these fields.'
+      );
+    }
+
+    const nonSharedOptionalCols = ['autopay_status'];
     let modified = false;
-    for (const col of optionalCols) {
+    for (const col of nonSharedOptionalCols) {
       if (errorMsg.includes(col)) {
         delete payload[col];
         modified = true;
@@ -301,34 +327,56 @@ export async function updateUserPassword(formData: FormData) {
 
 export async function toggleMemberPayment(subscriptionId: string, memberId: string, paid: boolean) {
   const { supabase, user } = await currentUser();
-  const { data: sub, error: fetchError } = await supabase
-    .from('subscriptions')
-    .select('shared_members')
-    .eq('id', subscriptionId)
-    .eq('user_id', user.id)
-    .single();
 
-  if (fetchError || !sub) throw new Error('Subscription not found.');
+  const MAX_RETRIES = 3;
+  let success = false;
 
-  const members = Array.isArray(sub.shared_members) ? sub.shared_members : [];
-  const updatedMembers = members.map((m: any) => {
-    if (m.id === memberId) {
-      return {
-        ...m,
-        paid,
-        paid_at: paid ? new Date().toISOString() : undefined,
-      };
+  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+    const { data: sub, error: fetchError } = await supabase
+      .from('subscriptions')
+      .select('shared_members, updated_at')
+      .eq('id', subscriptionId)
+      .eq('user_id', user.id)
+      .single();
+
+    if (fetchError || !sub) throw new Error('Subscription not found.');
+
+    const members = Array.isArray(sub.shared_members) ? sub.shared_members : [];
+    const updatedMembers = members.map((m: any) => {
+      if (m.id === memberId) {
+        return {
+          ...m,
+          paid,
+          paid_at: paid ? new Date().toISOString() : undefined,
+        };
+      }
+      return m;
+    });
+
+    let updateQuery = supabase
+      .from('subscriptions')
+      .update({ shared_members: updatedMembers })
+      .eq('id', subscriptionId)
+      .eq('user_id', user.id);
+
+    if (sub.updated_at) {
+      updateQuery = updateQuery.eq('updated_at', sub.updated_at);
     }
-    return m;
-  });
 
-  const { error: updateError } = await supabase
-    .from('subscriptions')
-    .update({ shared_members: updatedMembers })
-    .eq('id', subscriptionId)
-    .eq('user_id', user.id);
+    const { data: updatedRows, error: updateError } = await updateQuery.select('id');
 
-  if (updateError) throw new Error(updateError.message);
+    if (updateError) throw new Error(updateError.message);
+
+    if (updatedRows && updatedRows.length > 0) {
+      success = true;
+      break;
+    }
+  }
+
+  if (!success) {
+    throw new Error('Could not update member payment status due to concurrent changes. Please try again.');
+  }
+
   refreshAll(subscriptionId);
 }
 

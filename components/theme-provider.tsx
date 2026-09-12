@@ -42,6 +42,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Apply class to documentElement whenever theme changes or system changes
   useEffect(() => {
+    if (!mounted) return;
+
     const root = document.documentElement;
 
     function applyEffectiveTheme(effective: 'light' | 'dark') {
@@ -90,7 +92,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     } else {
       applyEffectiveTheme('light');
     }
-  }, [theme]);
+  }, [theme, mounted]);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);

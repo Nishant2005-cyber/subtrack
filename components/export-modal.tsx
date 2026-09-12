@@ -27,6 +27,19 @@ export function ExportModal({
   const activeSubs = subscriptions.filter((s) => s.status === 'active');
   const annualCommitment = monthlySpend * 12;
 
+  const totalsByCurrency = activeSubs.reduce<Record<string, number>>((acc, s) => {
+    const curr = s.currency || 'INR';
+    acc[curr] = (acc[curr] || 0) + (s.billing_cycle === 'yearly' ? Number(s.cost) / 12 : Number(s.cost));
+    return acc;
+  }, {});
+  const exportCurrencies = Object.keys(totalsByCurrency);
+  const monthlyDisplay = exportCurrencies.length > 0
+    ? exportCurrencies.map((c) => formatCurrency(totalsByCurrency[c], c)).join(' + ')
+    : formatCurrency(monthlySpend, currencyCode);
+  const annualDisplay = exportCurrencies.length > 0
+    ? exportCurrencies.map((c) => formatCurrency(totalsByCurrency[c] * 12, c)).join(' + ')
+    : formatCurrency(annualCommitment, currencyCode);
+
   // RFC 4180 CSV generation with UTF-8 BOM
   const handleDownloadCsv = () => {
     const headers = [
@@ -44,8 +57,12 @@ export function ExportModal({
     ];
 
     const escapeCsv = (val: unknown) => {
-      const str = String(val ?? '');
-      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+      if (val === null || val === undefined) return '';
+      let str = String(val);
+      if (/^[=+\-@]/.test(str)) {
+        str = `'${str}`;
+      }
+      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
         return `"${str.replace(/"/g, '""')}"`;
       }
       return str;
@@ -170,20 +187,20 @@ export function ExportModal({
                 <div className="p-2.5 rounded-lg bg-stone-50 dark:bg-stone-900/60 border border-stone-100 dark:border-stone-800">
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">Monthly Equivalent</span>
                   <span className="text-base font-extrabold font-mono text-emerald-700 dark:text-emerald-400">
-                    {formatCurrency(monthlySpend, currencyCode)}
+                    {monthlyDisplay}
                   </span>
                 </div>
                 <div className="p-2.5 rounded-lg bg-stone-50 dark:bg-stone-900/60 border border-stone-100 dark:border-stone-800">
                   <span className="text-[10px] uppercase font-bold text-stone-400 block">Annual Commitment</span>
                   <span className="text-base font-extrabold font-mono text-stone-800 dark:text-stone-200">
-                    {formatCurrency(annualCommitment, currencyCode)}
+                    {annualDisplay}
                   </span>
                 </div>
               </div>
 
               {/* Mini Table Preview */}
               <div className="max-h-48 overflow-auto text-xs divide-y divide-stone-100 dark:divide-stone-800">
-                {subscriptions.map((s) => (
+                {activeSubs.map((s) => (
                   <div key={s.id} className="py-2 flex items-center justify-between">
                     <div>
                       <span className="font-semibold">{s.service_name}</span>

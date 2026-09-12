@@ -11,22 +11,27 @@ export default async function SpendingPage() {
   if (!user) redirect('/login');
 
   const active = subscriptions.filter((s) => s.status === 'active');
-  const code = active[0]?.currency ?? 'INR';
-  const total = active.reduce(
-    (n, s) => n + monthlyCost(Number(s.cost), s.billing_cycle),
-    0
-  );
-  const yearly = total * 12;
-
-  const totals = active.reduce<Record<string, number>>((acc, s) => {
-    acc[s.category] =
-      (acc[s.category] || 0) + monthlyCost(Number(s.cost), s.billing_cycle);
+  const totalsByCurrency = active.reduce<Record<string, number>>((acc, s) => {
+    const curr = s.currency || 'INR';
+    acc[curr] = (acc[curr] || 0) + monthlyCost(Number(s.cost), s.billing_cycle);
     return acc;
   }, {});
-  const chart = Object.entries(totals).map(([name, value]) => ({
-    name,
-    value,
-  }));
+
+  const currencyCodes = Object.keys(totalsByCurrency);
+  const primaryCurrency = currencyCodes[0] ?? 'INR';
+  const primaryTotal = totalsByCurrency[primaryCurrency] ?? 0;
+
+  const chartsByCurrency: Record<string, { name: string; value: number }[]> = {};
+  for (const curr of (currencyCodes.length > 0 ? currencyCodes : ['INR'])) {
+    const subsInCurr = active.filter((s) => (s.currency || 'INR') === curr);
+    const catTotals = subsInCurr.reduce<Record<string, number>>((acc, s) => {
+      acc[s.category] = (acc[s.category] || 0) + monthlyCost(Number(s.cost), s.billing_cycle);
+      return acc;
+    }, {});
+    chartsByCurrency[curr] = Object.entries(catTotals)
+      .map(([name, value]) => ({ name, value }))
+      .sort((a, b) => b.value - a.value);
+  }
 
   return (
     <AppShell email={user.email ?? null}>
@@ -39,8 +44,8 @@ export default async function SpendingPage() {
           <div className="flex items-center gap-2">
             <ExportModal
               subscriptions={subscriptions}
-              monthlySpend={total}
-              currencyCode={code}
+              monthlySpend={primaryTotal}
+              currencyCode={primaryCurrency}
             />
           </div>
         </header>
@@ -50,48 +55,87 @@ export default async function SpendingPage() {
           <article className="card p-5">
             <p className="text-xs font-bold text-stone-500 dark:text-stone-400">Monthly equivalent</p>
             <p className="mt-2 text-3xl font-bold tracking-tight font-mono text-emerald-700 dark:text-emerald-400">
-              {currency(total, code)}
+              {currencyCodes.length === 0
+                ? currency(0, 'INR')
+                : currencyCodes.map((c) => currency(totalsByCurrency[c], c)).join(' + ')}
             </p>
             <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">Across active subscriptions</p>
           </article>
           <article className="card p-5">
             <p className="text-xs font-bold text-stone-500 dark:text-stone-400">Annual commitment</p>
             <p className="mt-2 text-3xl font-bold tracking-tight font-mono text-stone-900 dark:text-stone-100">
-              {currency(yearly, code)}
+              {currencyCodes.length === 0
+                ? currency(0, 'INR')
+                : currencyCodes.map((c) => currency(totalsByCurrency[c] * 12, c)).join(' + ')}
             </p>
             <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">If you keep everything for a year</p>
           </article>
           <article className="card p-5">
             <p className="text-xs font-bold text-stone-500 dark:text-stone-400">Biggest category</p>
             <p className="mt-2 text-3xl font-bold tracking-tight">
-              {chart.length
-                ? categoryLabel([...chart].sort((a, b) => b.value - a.value)[0].name)
+              {chartsByCurrency[primaryCurrency]?.length
+                ? categoryLabel(chartsByCurrency[primaryCurrency][0].name)
                 : '—'}
             </p>
-            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">Your top monthly subscription type</p>
+            <p className="mt-2 text-xs text-stone-500 dark:text-stone-400">
+              {chartsByCurrency[primaryCurrency]?.length
+                ? `${currency(chartsByCurrency[primaryCurrency][0].value, primaryCurrency)}/mo${currencyCodes.length > 1 ? ` (${primaryCurrency})` : ''}`
+                : 'Your top monthly subscription type'}
+            </p>
           </article>
         </section>
 
         {/* Budget Cap Widget */}
-        <section className="mt-5">
-          <BudgetMeter
-            monthlySpent={total}
-            currencyCode={code}
-            monthlyCap={settings?.monthly_budget_cap}
-            annualCap={settings?.annual_budget_cap}
-          />
+        <section className="mt-5 space-y-4">
+          {currencyCodes.length === 0 ? (
+            <BudgetMeter
+              monthlySpent={0}
+              currencyCode="INR"
+              monthlyCap={settings?.monthly_budget_cap}
+              annualCap={settings?.annual_budget_cap}
+            />
+          ) : (
+            currencyCodes.map((curr, idx) => (
+              <BudgetMeter
+                key={curr}
+                monthlySpent={totalsByCurrency[curr]}
+                currencyCode={curr}
+                monthlyCap={idx === 0 ? settings?.monthly_budget_cap : null}
+                annualCap={idx === 0 ? settings?.annual_budget_cap : null}
+              />
+            ))
+          )}
         </section>
 
         {/* Category Breakdown Chart */}
-        <section className="card mt-7 p-5 sm:p-7">
-          <div className="mb-3">
-            <h2 className="panel-title">Monthly spend by category</h2>
-            <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
-              Yearly plans are shown as their monthly equivalent.
-            </p>
-          </div>
-          <SpendingChart data={chart} currencyCode={code} />
-        </section>
+        {currencyCodes.length <= 1 ? (
+          <section className="card mt-7 p-5 sm:p-7">
+            <div className="mb-3">
+              <h2 className="panel-title">Monthly spend by category</h2>
+              <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                Yearly plans are shown as their monthly equivalent.
+              </p>
+            </div>
+            <SpendingChart data={chartsByCurrency[primaryCurrency] ?? []} currencyCode={primaryCurrency} />
+          </section>
+        ) : (
+          currencyCodes.map((curr) => (
+            <section key={curr} className="card mt-7 p-5 sm:p-7">
+              <div className="mb-3 flex items-center justify-between">
+                <div>
+                  <h2 className="panel-title">Monthly spend by category ({curr})</h2>
+                  <p className="mt-1 text-sm text-stone-500 dark:text-stone-400">
+                    Yearly plans are shown as their monthly equivalent in {curr}.
+                  </p>
+                </div>
+                <span className="font-mono text-sm font-bold text-emerald-700 dark:text-emerald-400">
+                  {currency(totalsByCurrency[curr], curr)}/mo
+                </span>
+              </div>
+              <SpendingChart data={chartsByCurrency[curr] ?? []} currencyCode={curr} />
+            </section>
+          ))
+        )}
 
         {/* Active Subscriptions List */}
         <section className="card mt-7 overflow-hidden">

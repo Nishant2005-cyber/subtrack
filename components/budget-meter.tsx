@@ -234,7 +234,7 @@ export function BudgetMeter({
                 <input
                   type="number"
                   min="0"
-                  step="1"
+                  step="any"
                   placeholder="e.g. 2500"
                   value={monthlyInput}
                   onChange={(e) => setMonthlyInput(e.target.value)}
@@ -252,7 +252,7 @@ export function BudgetMeter({
                 <input
                   type="number"
                   min="0"
-                  step="1"
+                  step="any"
                   placeholder="e.g. 30000"
                   value={annualInput}
                   onChange={(e) => setAnnualInput(e.target.value)}

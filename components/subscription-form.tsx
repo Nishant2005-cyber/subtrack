@@ -84,7 +84,7 @@ export function SubscriptionForm({ subscription }: { subscription?: Subscription
   const [members, setMembers] = useState<SharedMember[]>(subscription?.shared_members ?? []);
   const [costInput, setCostInput] = useState<string>(subscription?.cost !== undefined ? String(subscription.cost) : '');
   const [myShareInput, setMyShareInput] = useState<string>(
-    subscription?.my_share !== undefined ? String(subscription.my_share) : ''
+    subscription?.my_share != null ? String(subscription.my_share) : ''
   );
   const [currencyInput, setCurrencyInput] = useState<string>(subscription?.currency ?? 'INR');
 
@@ -101,7 +101,7 @@ export function SubscriptionForm({ subscription }: { subscription?: Subscription
 
   const numericCost = Number(costInput) || 0;
   const calculatedAutoShare = isShared && splitCount > 0 ? Number((numericCost / splitCount).toFixed(2)) : numericCost;
-  const currentMyShare = myShareInput ? Number(myShareInput) : calculatedAutoShare;
+  const currentMyShare = (myShareInput !== '' && !isNaN(Number(myShareInput))) ? Number(myShareInput) : calculatedAutoShare;
 
   const priceDiff = subscription && Number.isFinite(subscription.cost)
     ? Number((numericCost - subscription.cost).toFixed(2))

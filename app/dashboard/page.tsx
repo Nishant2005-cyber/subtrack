@@ -18,11 +18,28 @@ export default async function Dashboard() {
   if (!user || !settings) redirect('/login');
 
   const active = subscriptions.filter((s) => s.status === 'active');
-  const currencyCode = active[0]?.currency ?? 'INR';
-  const total = active.reduce((sum, s) => sum + monthlyCost(Number(s.cost), s.billing_cycle), 0);
+  const totalsByCurrency = active.reduce<Record<string, number>>((acc, s) => {
+    const curr = s.currency || 'INR';
+    acc[curr] = (acc[curr] || 0) + monthlyCost(Number(s.cost), s.billing_cycle);
+    return acc;
+  }, {});
+  const currencyCodes = Object.keys(totalsByCurrency);
+  const primaryCurrency = currencyCodes[0] ?? 'INR';
+  const primaryTotal = totalsByCurrency[primaryCurrency] ?? 0;
+
   const due = active.filter(
     (s) => daysUntil(s.next_renewal_date) >= 0 && daysUntil(s.next_renewal_date) <= 7
   );
+  const dueTotalsByCurrency = due.reduce<Record<string, number>>((acc, s) => {
+    const curr = s.currency || 'INR';
+    acc[curr] = (acc[curr] || 0) + Number(s.cost);
+    return acc;
+  }, {});
+  const dueCurrencies = Object.keys(dueTotalsByCurrency);
+  const dueValueFormatted = dueCurrencies.length === 0
+    ? currency(0, primaryCurrency)
+    : dueCurrencies.map((c) => currency(dueTotalsByCurrency[c], c)).join(' + ');
+
   const today = getTodayDateStr();
   const usedToday = new Set(
     usage.filter((l) => l.logged_date === today).map((l) => l.subscription_id)
@@ -49,8 +66,8 @@ export default async function Dashboard() {
           <div className="flex items-center gap-2">
             <ExportModal
               subscriptions={subscriptions}
-              monthlySpend={total}
-              currencyCode={currencyCode}
+              monthlySpend={primaryTotal}
+              currencyCode={primaryCurrency}
             />
             <SubscriptionForm />
           </div>
@@ -60,8 +77,12 @@ export default async function Dashboard() {
         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <Stat
             title="Monthly spend"
-            value={currency(total, currencyCode)}
-            note="Active subscriptions only"
+            value={
+              currencyCodes.length === 0
+                ? currency(0, 'INR')
+                : currencyCodes.map((c) => currency(totalsByCurrency[c], c)).join(' + ')
+            }
+            note={currencyCodes.length > 1 ? `${currencyCodes.length} currencies tracked` : 'Active subscriptions only'}
             color="bg-lime text-ink"
             icon={<CircleDollarSign size={18} />}
           />
@@ -74,10 +95,7 @@ export default async function Dashboard() {
           />
           <Stat
             title="Due this week"
-            value={currency(
-              due.reduce((sum, s) => sum + Number(s.cost), 0),
-              currencyCode
-            )}
+            value={dueValueFormatted}
             note={`${due.length} renewal${due.length === 1 ? '' : 's'} coming up`}
             color="bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300"
             icon={<CalendarClock size={18} />}
@@ -99,13 +117,25 @@ export default async function Dashboard() {
         </section>
 
         {/* Budget Cap & Spending Limit Widget */}
-        <section className="mt-5">
-          <BudgetMeter
-            monthlySpent={total}
-            currencyCode={currencyCode}
-            monthlyCap={settings.monthly_budget_cap}
-            annualCap={settings.annual_budget_cap}
-          />
+        <section className="mt-5 space-y-4">
+          {currencyCodes.length === 0 ? (
+            <BudgetMeter
+              monthlySpent={0}
+              currencyCode="INR"
+              monthlyCap={settings.monthly_budget_cap}
+              annualCap={settings.annual_budget_cap}
+            />
+          ) : (
+            currencyCodes.map((curr, idx) => (
+              <BudgetMeter
+                key={curr}
+                monthlySpent={totalsByCurrency[curr]}
+                currencyCode={curr}
+                monthlyCap={idx === 0 ? settings.monthly_budget_cap : null}
+                annualCap={idx === 0 ? settings.annual_budget_cap : null}
+              />
+            ))
+          )}
         </section>
 
         <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1.55fr)_minmax(310px,.75fr)]">

@@ -118,8 +118,8 @@ export function ProfileForm({
     startSettingsTransition(async () => {
       try {
         await saveSettings(formData);
-        setSettingsStatus({ type: 'success', message: 'Notification preferences saved!' });
-        toastSuccess('Notification settings saved!');
+        setSettingsStatus({ type: 'success', message: 'Preferences saved successfully!' });
+        toastSuccess('Preferences saved successfully!');
       } catch (e) {
         const msg = e instanceof Error ? e.message : 'Could not save settings.';
         setSettingsStatus({ type: 'error', message: msg });
@@ -459,7 +459,7 @@ export function ProfileForm({
                   name="monthly_budget_cap"
                   type="number"
                   min="0"
-                  step="1"
+                  step="any"
                   defaultValue={settings.monthly_budget_cap ?? ''}
                   placeholder="e.g. 2500"
                   className="field mt-1.5 font-mono"
@@ -472,7 +472,7 @@ export function ProfileForm({
                   name="annual_budget_cap"
                   type="number"
                   min="0"
-                  step="1"
+                  step="any"
                   defaultValue={settings.annual_budget_cap ?? ''}
                   placeholder="e.g. 30000"
                   className="field mt-1.5 font-mono"

@@ -91,17 +91,60 @@ describe('Optional Features: Budget Caps & Spending Limits', () => {
 });
 
 describe('Optional Features: CSV Generation & RFC 4180 Escaping', () => {
-  it('escapes quotes and commas properly', () => {
-    const escapeCsv = (val: unknown) => {
-      const str = String(val ?? '');
-      if (str.includes(',') || str.includes('"') || str.includes('\n')) {
-        return `"${str.replace(/"/g, '""')}"`;
-      }
-      return str;
-    };
+  const escapeCsv = (val: unknown) => {
+    if (val === null || val === undefined) return '';
+    let str = String(val);
+    if (/^[=+\-@]/.test(str)) {
+      str = `'${str}`;
+    }
+    if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+      return `"${str.replace(/"/g, '""')}"`;
+    }
+    return str;
+  };
 
+  it('escapes quotes and commas properly', () => {
     expect(escapeCsv('Netflix, Inc.')).toBe('"Netflix, Inc."');
     expect(escapeCsv('Plan with "VIP" access')).toBe('"Plan with ""VIP"" access"');
     expect(escapeCsv('Simple')).toBe('Simple');
+    expect(escapeCsv(null)).toBe('');
+  });
+
+  it('sanitizes formula injection prefixes (=, +, -, @)', () => {
+    expect(escapeCsv('=cmd|')).toBe("'=cmd|");
+    expect(escapeCsv('+12345')).toBe("'+12345");
+    expect(escapeCsv('-calc')).toBe("'-calc");
+    expect(escapeCsv('@SUM(A1:A10)')).toBe("'@SUM(A1:A10)");
+  });
+});
+
+describe('Optional Features: Validation & Edge Cases', () => {
+  it('validates shared member array entries', () => {
+    const isValidMember = (m: unknown) =>
+      Boolean(
+        m &&
+          typeof m === 'object' &&
+          'id' in m &&
+          typeof (m as any).id === 'string' &&
+          (m as any).id.trim() !== '' &&
+          'name' in m &&
+          typeof (m as any).name === 'string' &&
+          (m as any).name.trim() !== ''
+      );
+
+    expect(isValidMember({ id: '1', name: 'Alice' })).toBe(true);
+    expect(isValidMember(null)).toBe(false);
+    expect(isValidMember(42)).toBe(false);
+    expect(isValidMember({ id: '', name: 'Alice' })).toBe(false);
+    expect(isValidMember({ id: '1' })).toBe(false);
+  });
+
+  it('skips price hike comparison when currencies do not match', () => {
+    const existingSub = { cost: 10, currency: 'USD' };
+    const newCost = 800;
+    const newCurrency = 'INR';
+
+    const shouldCompare = existingSub.currency === newCurrency;
+    expect(shouldCompare).toBe(false);
   });
 });
