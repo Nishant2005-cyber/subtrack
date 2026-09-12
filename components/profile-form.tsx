@@ -132,13 +132,13 @@ export function ProfileForm({
     <div className="space-y-7">
       {/* 1. Account Profile Card */}
       <section className="card overflow-hidden">
-        <div className="flex items-center gap-3 border-b p-5">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-100 text-violet">
+        <div className="flex items-center gap-3 border-b border-stone-200 dark:border-stone-800 p-5">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-violet-100 text-violet dark:bg-violet-950/60 dark:text-violet-300">
             <User size={19} />
           </span>
           <div>
             <h2 className="panel-title">Account Profile</h2>
-            <p className="mt-0.5 text-xs text-stone-500">Manage your personal details and contact info.</p>
+            <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">Manage your personal details and contact info.</p>
           </div>
         </div>
 
@@ -147,21 +147,21 @@ export function ProfileForm({
             <div
               className={`flex items-start gap-2.5 rounded-xl border p-3.5 text-xs font-medium transition-all ${
                 profileStatus.type === 'error'
-                  ? 'border-rose-200 bg-rose-50 text-rose-800'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  ? 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300'
               }`}
             >
               {profileStatus.type === 'error' ? (
-                <AlertCircle size={15} className="shrink-0 mt-0.5 text-rose-600" />
+                <AlertCircle size={15} className="shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
               ) : (
-                <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-600" />
+                <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
               )}
               <p>{profileStatus.message}</p>
             </div>
           )}
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <label className="text-xs font-bold text-stone-700">
+            <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
               Full Name / Display Name
               <input
                 name="full_name"
@@ -171,18 +171,18 @@ export function ProfileForm({
               />
             </label>
 
-            <label className="text-xs font-bold text-stone-700">
+            <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
               Email Address
               <input
                 type="email"
                 disabled
                 defaultValue={userEmail ?? ''}
-                className="field mt-1.5 bg-stone-100/70 text-stone-500 cursor-not-allowed"
+                className="field mt-1.5 bg-stone-100/70 dark:bg-stone-800/70 text-stone-500 dark:text-stone-400 cursor-not-allowed"
                 title="Account email address"
               />
             </label>
 
-            <label className="text-xs font-bold text-stone-700 sm:col-span-2">
+            <label className="text-xs font-bold text-stone-700 dark:text-stone-300 sm:col-span-2">
               Phone Number <span className="font-normal text-stone-400">(with country code, e.g. +91...)</span>
               <input
                 name="phone"
@@ -197,7 +197,7 @@ export function ProfileForm({
           <div className="flex justify-end pt-2">
             <button
               disabled={profilePending}
-              className="action bg-ink text-white hover:bg-black disabled:opacity-50 text-xs font-bold px-4 py-2.5"
+              className="action bg-ink text-white hover:bg-black dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white disabled:opacity-50 text-xs font-bold px-4 py-2.5"
             >
               {profilePending ? 'Saving profile…' : 'Save Profile Details'}
             </button>
@@ -207,13 +207,13 @@ export function ProfileForm({
 
       {/* 2. Security & Password Card */}
       <section className="card overflow-hidden">
-        <div className="flex items-center gap-3 border-b p-5">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-lime text-ink">
+        <div className="flex items-center gap-3 border-b border-stone-200 dark:border-stone-800 p-5">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 dark:border dark:border-amber-800/40">
             <KeyRound size={19} />
           </span>
           <div>
             <h2 className="panel-title">Security & Password</h2>
-            <p className="mt-0.5 text-xs text-stone-500">Update your account login password.</p>
+            <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">Update your account login password.</p>
           </div>
         </div>
 
@@ -222,21 +222,21 @@ export function ProfileForm({
             <div
               className={`flex items-start gap-2.5 rounded-xl border p-3.5 text-xs font-medium transition-all ${
                 passwordStatus.type === 'error'
-                  ? 'border-rose-200 bg-rose-50 text-rose-800'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  ? 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300'
               }`}
             >
               {passwordStatus.type === 'error' ? (
-                <AlertCircle size={15} className="shrink-0 mt-0.5 text-rose-600" />
+                <AlertCircle size={15} className="shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
               ) : (
-                <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-600" />
+                <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
               )}
               <p>{passwordStatus.message}</p>
             </div>
           )}
 
           <div className="space-y-4">
-            <label className="block text-xs font-bold text-stone-700">
+            <label className="block text-xs font-bold text-stone-700 dark:text-stone-300">
               Current Password <span className="text-rose-500">*</span>
               <div className="relative mt-1.5">
                 <input
@@ -251,7 +251,7 @@ export function ProfileForm({
                 <button
                   type="button"
                   onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-stone-600 dark:text-stone-400 dark:hover:text-stone-200 transition"
                   aria-label={showCurrentPassword ? 'Hide password' : 'Show password'}
                 >
                   {showCurrentPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -260,8 +260,8 @@ export function ProfileForm({
             </label>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="text-xs font-bold text-stone-700">
-                New Password
+              <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                New Password <span className="text-rose-500">*</span>
                 <div className="relative mt-1.5">
                   <input
                     name="new_password"
@@ -276,7 +276,7 @@ export function ProfileForm({
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-stone-600 dark:text-stone-400 dark:hover:text-stone-200 transition"
                     aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -284,8 +284,8 @@ export function ProfileForm({
                 </div>
               </label>
 
-              <label className="text-xs font-bold text-stone-700">
-                Confirm New Password
+              <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
+                Confirm New Password <span className="text-rose-500">*</span>
                 <div className="relative mt-1.5">
                   <input
                     name="confirm_password"
@@ -300,7 +300,7 @@ export function ProfileForm({
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-ink transition"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg p-1 text-stone-400 hover:text-stone-600 dark:text-stone-400 dark:hover:text-stone-200 transition"
                     aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                   >
                     {showConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
@@ -313,7 +313,7 @@ export function ProfileForm({
           <div className="flex justify-end pt-2">
             <button
               disabled={passwordPending}
-              className="action bg-stone-900 text-white hover:bg-black disabled:opacity-50 text-xs font-bold px-4 py-2.5"
+              className="action bg-stone-900 text-white hover:bg-black dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white disabled:opacity-50 text-xs font-bold px-4 py-2.5"
             >
               {passwordPending ? 'Updating password…' : 'Update Password'}
             </button>
@@ -323,13 +323,13 @@ export function ProfileForm({
 
       {/* 3. Notification Preferences Form */}
       <section className="card overflow-hidden">
-        <div className="flex items-center gap-3 border-b p-5">
-          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-100 text-orange-700">
+        <div className="flex items-center gap-3 border-b border-stone-200 dark:border-stone-800 p-5">
+          <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300">
             <Bell size={19} />
           </span>
           <div>
             <h2 className="panel-title">Notification Preferences</h2>
-            <p className="mt-0.5 text-xs text-stone-500">Choose when and where you receive renewal alerts.</p>
+            <p className="mt-0.5 text-xs text-stone-500 dark:text-stone-400">Choose when and where you receive renewal alerts.</p>
           </div>
         </div>
 
@@ -338,14 +338,14 @@ export function ProfileForm({
             <div
               className={`flex items-start gap-2.5 rounded-xl border p-3.5 text-xs font-medium transition-all ${
                 settingsStatus.type === 'error'
-                  ? 'border-rose-200 bg-rose-50 text-rose-800'
-                  : 'border-emerald-200 bg-emerald-50 text-emerald-800'
+                  ? 'border-rose-200 bg-rose-50 text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300'
+                  : 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:border-emerald-900/50 dark:bg-emerald-950/40 dark:text-emerald-300'
               }`}
             >
               {settingsStatus.type === 'error' ? (
-                <AlertCircle size={15} className="shrink-0 mt-0.5 text-rose-600" />
+                <AlertCircle size={15} className="shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
               ) : (
-                <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-600" />
+                <CheckCircle2 size={15} className="shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
               )}
               <p>{settingsStatus.message}</p>
             </div>
@@ -353,7 +353,7 @@ export function ProfileForm({
 
           {/* Timing */}
           <div>
-            <label className="block max-w-xs text-xs font-bold text-stone-700">
+            <label className="block max-w-xs text-xs font-bold text-stone-700 dark:text-stone-300">
               Reminder Notice Window
               <select
                 name="reminder_days_before"
@@ -366,61 +366,61 @@ export function ProfileForm({
                 <option value="7">7 days before renewal</option>
               </select>
             </label>
-            <p className="mt-1.5 text-[11px] text-stone-500">
+            <p className="mt-1.5 text-[11px] text-stone-500 dark:text-stone-400">
               Reminders repeat daily until acknowledged or when subscription status changes.
             </p>
           </div>
 
           {/* Channels */}
-          <div className="space-y-3 border-t pt-5">
-            <h3 className="text-xs font-bold text-stone-700">Delivery Channels</h3>
+          <div className="space-y-3 border-t border-stone-200 dark:border-stone-800 pt-5">
+            <h3 className="text-xs font-bold text-stone-700 dark:text-stone-300">Delivery Channels</h3>
             <div className="grid gap-3 sm:grid-cols-2">
-              <label className="flex cursor-pointer items-center gap-3.5 rounded-xl border border-stone-200 p-4 hover:bg-stone-50 transition">
+              <label className="flex cursor-pointer items-center gap-3.5 rounded-xl border border-stone-200 dark:border-stone-800 p-4 hover:bg-stone-50 dark:hover:bg-stone-900/50 transition">
                 <input
                   name="notify_email"
                   type="checkbox"
                   defaultChecked={settings.notify_email}
                   className="h-4 w-4 accent-violet"
                 />
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-sky-100 text-sky-700">
+                <span className="grid h-8 w-8 place-items-center rounded-lg bg-sky-100 text-sky-700 dark:bg-sky-950/60 dark:text-sky-300">
                   <Mail size={16} />
                 </span>
                 <div>
-                  <b className="block text-xs font-bold text-ink">Email Alerts</b>
-                  <span className="text-[11px] text-stone-500 truncate block">Sent to {userEmail}</span>
+                  <b className="block text-xs font-bold text-ink dark:text-stone-100">Email Alerts</b>
+                  <span className="text-[11px] text-stone-500 dark:text-stone-400 truncate block">Sent to {userEmail}</span>
                 </div>
               </label>
 
-              <label className="flex cursor-pointer items-center gap-3.5 rounded-xl border border-stone-200 p-4 hover:bg-stone-50 transition">
+              <label className="flex cursor-pointer items-center gap-3.5 rounded-xl border border-stone-200 dark:border-stone-800 p-4 hover:bg-stone-50 dark:hover:bg-stone-900/50 transition">
                 <input
                   name="notify_sms"
                   type="checkbox"
                   defaultChecked={settings.notify_sms}
                   className="h-4 w-4 accent-violet"
                 />
-                <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-100 text-emerald-700">
+                <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
                   <MessageSquare size={16} />
                 </span>
                 <div>
-                  <b className="block text-xs font-bold text-ink">SMS Alerts</b>
-                  <span className="text-[11px] text-stone-500">Carrier rates apply</span>
+                  <b className="block text-xs font-bold text-ink dark:text-stone-100">SMS Alerts</b>
+                  <span className="text-[11px] text-stone-500 dark:text-stone-400">Carrier rates apply</span>
                 </div>
               </label>
             </div>
           </div>
 
           {/* Quiet Hours */}
-          <div className="border-t pt-5">
+          <div className="border-t border-stone-200 dark:border-stone-800 pt-5">
             <div className="flex items-center gap-2 mb-3">
-              <Moon size={15} className="text-orange-600" />
-              <h3 className="text-xs font-bold text-stone-700">Quiet Hours</h3>
+              <Moon size={15} className="text-orange-600 dark:text-orange-400" />
+              <h3 className="text-xs font-bold text-stone-700 dark:text-stone-300">Quiet Hours</h3>
             </div>
-            <p className="text-[11px] text-stone-500 mb-3">
+            <p className="text-[11px] text-stone-500 dark:text-stone-400 mb-3">
               Avoid email and SMS reminders during the hours you choose.
             </p>
 
             <div className="grid gap-4 sm:grid-cols-2">
-              <label className="text-xs font-bold text-stone-700">
+              <label className="text-xs font-bold text-stone-700 dark:text-stone-300">
                 Start Time
                 <input
                   name="quiet_hours_start"

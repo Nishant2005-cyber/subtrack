@@ -28,7 +28,11 @@ export function DetailActions({ id, status, usedToday }: { id: string; status: S
       <button
         disabled={pending || usedToday || status !== 'active'}
         onClick={() => run(() => logUsage(id), 'Activity logged for today!')}
-        className={`action ${usedToday ? 'bg-lime text-ink' : 'bg-ink text-white'} disabled:opacity-70`}
+        className={`action ${
+          usedToday
+            ? 'bg-emerald-100 text-emerald-700 font-bold dark:bg-emerald-950/60 dark:text-emerald-300 dark:border dark:border-emerald-800/40'
+            : 'bg-ink text-white hover:bg-black dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white'
+        } disabled:opacity-70`}
       >
         <Check size={14} />
         {usedToday ? 'Logged today' : 'Used today'}
@@ -43,7 +47,7 @@ export function DetailActions({ id, status, usedToday }: { id: string; status: S
               status === 'paused' ? 'Subscription resumed!' : 'Subscription paused.'
             )
           }
-          className="action bg-stone-100 text-stone-700 hover:bg-stone-200"
+          className="action bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700"
         >
           {status === 'paused' ? <Play size={14} /> : <Pause size={14} />}
           {status === 'paused' ? 'Resume' : 'Pause'}
@@ -54,7 +58,7 @@ export function DetailActions({ id, status, usedToday }: { id: string; status: S
         <button
           disabled={pending}
           onClick={() => run(() => setSubscriptionStatus(id, 'active'), 'Subscription reactivated!')}
-          className="action bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200"
+          className="action bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60"
         >
           <RotateCcw size={14} />
           Reactivate subscription
@@ -70,7 +74,7 @@ export function DetailActions({ id, status, usedToday }: { id: string; status: S
               );
             }
           }}
-          className="action bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200"
+          className="action bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60"
         >
           <XCircle size={14} />
           Cancel Subscription
@@ -87,7 +91,7 @@ export function DetailActions({ id, status, usedToday }: { id: string; status: S
             }, 'Subscription deleted.');
           }
         }}
-        className="action bg-red-50 text-red-700 hover:bg-red-100"
+        className="action bg-red-50 text-red-700 hover:bg-red-100 dark:bg-rose-950/40 dark:text-rose-300 dark:border dark:border-rose-900/50 dark:hover:bg-rose-900/60"
       >
         <Trash2 size={14} />
         Delete

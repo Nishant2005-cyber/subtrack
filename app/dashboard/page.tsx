@@ -83,7 +83,7 @@ export default async function Dashboard() {
                 : currencyCodes.map((c) => currency(totalsByCurrency[c], c)).join(' + ')
             }
             note={currencyCodes.length > 1 ? `${currencyCodes.length} currencies tracked` : 'Active subscriptions only'}
-            color="bg-lime text-ink"
+            color="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border dark:border-emerald-800/40"
             icon={<CircleDollarSign size={18} />}
           />
           <Stat
@@ -149,7 +149,7 @@ export default async function Dashboard() {
             <section className="card p-5">
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="panel-title">Next reminder</h2>
-                <BellRing size={17} className="text-violet" />
+                <BellRing size={17} className="text-violet dark:text-violet-400" />
               </div>
               {reminder && reminderSub ? (
                 <>
@@ -167,14 +167,14 @@ export default async function Dashboard() {
                         href={reminderSub.renewal_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="action bg-ink text-white"
+                        className="action bg-ink text-white hover:bg-black dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white shadow-xs"
                       >
                         Renew on site ↗
                       </a>
                     )}
                     <a
                       href={`/subscriptions/${reminderSub.id}`}
-                      className="action bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                      className="action bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 dark:hover:bg-stone-700 shadow-xs"
                     >
                       View details
                     </a>
@@ -186,7 +186,7 @@ export default async function Dashboard() {
                     <p className="text-sm font-bold text-orange-950 dark:text-orange-200">
                       {next.service_name} renews in {Math.max(0, daysUntil(next.next_renewal_date))} days
                     </p>
-                    <p className="mt-1 text-xs leading-5 text-stone-600 dark:text-stone-400">
+                    <p className="mt-1 text-xs leading-5 text-stone-600 dark:text-orange-200/90">
                       Your {currency(Number(next.cost), next.currency)} {next.billing_cycle} plan is coming up. We’ll use your {settings.reminder_days_before}-day preference.
                     </p>
                   </div>
@@ -196,14 +196,14 @@ export default async function Dashboard() {
                         href={next.renewal_url}
                         target="_blank"
                         rel="noreferrer"
-                        className="action bg-ink text-white"
+                        className="action bg-ink text-white hover:bg-black dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white shadow-xs"
                       >
                         Renew on site ↗
                       </a>
                     )}
                     <a
                       href={`/subscriptions/${next.id}`}
-                      className="action bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300"
+                      className="action bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-200 dark:hover:bg-stone-700 shadow-xs"
                     >
                       View details
                     </a>
@@ -222,6 +222,13 @@ export default async function Dashboard() {
   );
 }
 function Stat({title,value,note,color,icon,href}:{title:string;value:string;note:string;color:string;icon:React.ReactNode;href?:string}){
-  const card = <article className={`card p-5 ${href?'hover:border-stone-300 transition-colors cursor-pointer':''}`}><span className={`grid h-9 w-9 place-items-center rounded-xl ${color}`}>{icon}</span><p className="mt-4 text-xs font-bold text-stone-500">{title}</p><p className="mt-1 text-2xl font-bold tracking-tight">{value}</p><p className="mt-1 text-[11px] text-stone-500">{note}</p></article>;
+  const card = (
+    <article className={`card p-5 ${href ? 'hover:border-stone-300 dark:hover:border-stone-700 transition-colors cursor-pointer' : ''}`}>
+      <span className={`grid h-9 w-9 place-items-center rounded-xl ${color}`}>{icon}</span>
+      <p className="mt-4 text-xs font-bold text-stone-500 dark:text-stone-400">{title}</p>
+      <p className="mt-1 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">{value}</p>
+      <p className="mt-1 text-[11px] text-stone-500 dark:text-stone-400">{note}</p>
+    </article>
+  );
   return href ? <Link href={href}>{card}</Link> : card;
 }

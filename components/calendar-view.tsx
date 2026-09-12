@@ -181,25 +181,25 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
       {/* Top Header */}
       <header className="mb-7 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="text-sm text-stone-500 font-medium">Plan before payments hit</p>
-          <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl text-ink">
+          <p className="text-sm text-stone-500 dark:text-stone-400 font-medium">Plan before payments hit</p>
+          <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl text-ink dark:text-stone-100">
             Renewal calendar
           </h1>
         </div>
 
         {/* Month Summary Stats Badge */}
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-2xl border border-stone-200/80 bg-white px-4 py-2.5 shadow-xs">
-            <span className="grid h-8 w-8 place-items-center rounded-xl bg-violet-50 text-violet">
+          <div className="flex items-center gap-2 rounded-2xl border border-stone-200/80 bg-white px-4 py-2.5 shadow-xs dark:border-stone-800 dark:bg-[#181816]">
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-violet-50 text-violet dark:bg-violet-950/60 dark:text-violet-300">
               <CreditCard size={17} />
             </span>
             <div>
-              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-400">
                 {format(currentMonth, 'MMMM')} Spending
               </p>
-              <p className="text-base font-extrabold text-ink">
+              <p className="text-base font-extrabold text-ink dark:text-stone-100">
                 {currency(monthTotalSpend, primaryCurrency)}
-                <span className="ml-1.5 text-xs font-normal text-stone-500">
+                <span className="ml-1.5 text-xs font-normal text-stone-500 dark:text-stone-400">
                   ({monthRenewalCount} renewal{monthRenewalCount === 1 ? '' : 's'})
                 </span>
               </p>
@@ -209,9 +209,9 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
       </header>
 
       {/* Main Calendar Card */}
-      <section className="card overflow-hidden border border-stone-200/80 bg-white shadow-xs rounded-2xl">
+      <section className="card overflow-hidden border border-stone-200/80 bg-white shadow-xs rounded-2xl dark:border-stone-800 dark:bg-[#181816]">
         {/* Navigation & Controls Bar */}
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200/80 px-5 py-4 bg-stone-50/50">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200/80 px-5 py-4 bg-stone-50/50 dark:border-stone-800 dark:bg-[#141412]">
           {/* Month Switcher Controls */}
           <div className="flex items-center gap-2">
             {/* Backward Button */}
@@ -219,7 +219,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
               type="button"
               onClick={prevMonth}
               title="Previous Month (Arrow Left)"
-              className="grid h-9 w-9 place-items-center rounded-xl border border-stone-200 bg-white text-stone-700 shadow-xs transition hover:bg-stone-100 hover:text-ink active:scale-95"
+              className="grid h-9 w-9 place-items-center rounded-xl border border-stone-200 bg-white text-stone-700 shadow-xs transition hover:bg-stone-100 hover:text-ink active:scale-95 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-white"
             >
               <ChevronLeft size={18} />
             </button>
@@ -229,7 +229,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
               type="button"
               onClick={nextMonth}
               title="Next Month (Arrow Right)"
-              className="grid h-9 w-9 place-items-center rounded-xl border border-stone-200 bg-white text-stone-700 shadow-xs transition hover:bg-stone-100 hover:text-ink active:scale-95"
+              className="grid h-9 w-9 place-items-center rounded-xl border border-stone-200 bg-white text-stone-700 shadow-xs transition hover:bg-stone-100 hover:text-ink active:scale-95 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-white"
             >
               <ChevronRight size={18} />
             </button>
@@ -240,8 +240,8 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
               onClick={goToToday}
               className={`rounded-xl px-3 py-1.5 text-xs font-bold transition shadow-xs ${
                 isCurrentMonth
-                  ? 'border border-stone-200 bg-white text-stone-400 cursor-default'
-                  : 'border border-violet-200 bg-violet-50 text-violet hover:bg-violet-100 active:scale-95'
+                  ? 'border border-stone-200 bg-white text-stone-400 cursor-default dark:border-stone-800 dark:bg-stone-900/60 dark:text-stone-500'
+                  : 'border border-violet-200 bg-violet-50 text-violet hover:bg-violet-100 active:scale-95 dark:border-violet-800/80 dark:bg-violet-950/60 dark:text-violet-300 dark:hover:bg-violet-900/60'
               }`}
             >
               Today
@@ -252,7 +252,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
               <select
                 value={currentMonthIndex}
                 onChange={(e) => handleMonthChange(Number(e.target.value))}
-                className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-sm font-bold text-ink shadow-xs outline-none transition hover:border-stone-300 focus:border-violet focus:ring-2 focus:ring-violet/10 cursor-pointer"
+                className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-sm font-bold text-ink shadow-xs outline-none transition hover:border-stone-300 focus:border-violet focus:ring-2 focus:ring-violet/10 cursor-pointer dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:hover:border-stone-600"
               >
                 {months.map((m, idx) => (
                   <option key={m} value={idx}>
@@ -264,7 +264,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
               <select
                 value={currentYear}
                 onChange={(e) => handleYearChange(Number(e.target.value))}
-                className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-sm font-bold text-ink shadow-xs outline-none transition hover:border-stone-300 focus:border-violet focus:ring-2 focus:ring-violet/10 cursor-pointer"
+                className="rounded-xl border border-stone-200 bg-white px-3 py-1.5 text-sm font-bold text-ink shadow-xs outline-none transition hover:border-stone-300 focus:border-violet focus:ring-2 focus:ring-violet/10 cursor-pointer dark:border-stone-700 dark:bg-stone-800 dark:text-stone-100 dark:hover:border-stone-600"
               >
                 {years.map((y) => (
                   <option key={y} value={y}>
@@ -285,11 +285,11 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
         </div>
 
         {/* Days of the Week Header */}
-        <div className="grid grid-cols-7 border-b border-stone-200 bg-stone-50/70">
+        <div className="grid grid-cols-7 border-b border-stone-200 bg-stone-50/70 dark:border-stone-800 dark:bg-[#161614]">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
             <div
               key={d}
-              className="py-2.5 text-center text-[11px] font-bold uppercase tracking-wider text-stone-400"
+              className="py-2.5 text-center text-[11px] font-bold uppercase tracking-wider text-stone-400 dark:text-stone-400"
             >
               {d}
             </div>
@@ -297,7 +297,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
         </div>
 
         {/* Days Grid */}
-        <div className="grid grid-cols-7 divide-x divide-stone-100">
+        <div className="grid grid-cols-7 divide-x divide-stone-100 dark:divide-stone-800/80">
           {days.map((day) => {
             const inMonth = isSameMonth(day, currentMonth);
             const isToday = isSameDay(day, today);
@@ -309,12 +309,12 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
               <div
                 key={key}
                 onClick={() => hasEvents && setSelectedDay(day)}
-                className={`min-h-[90px] border-b border-stone-200/80 p-2 transition sm:min-h-[120px] sm:p-2.5 flex flex-col justify-between ${
+                className={`min-h-[90px] border-b border-stone-200/80 dark:border-stone-800/80 p-2 transition sm:min-h-[120px] sm:p-2.5 flex flex-col justify-between ${
                   !inMonth
-                    ? 'bg-stone-50/60 text-stone-300'
+                    ? 'bg-stone-50/60 text-stone-300 dark:bg-[#121210]/60 dark:text-stone-600'
                     : hasEvents
-                    ? 'bg-white hover:bg-violet-50/30 cursor-pointer'
-                    : 'bg-white hover:bg-stone-50/40'
+                    ? 'bg-white hover:bg-violet-50/30 cursor-pointer dark:bg-[#181816] dark:hover:bg-violet-950/20'
+                    : 'bg-white hover:bg-stone-50/40 dark:bg-[#181816] dark:hover:bg-stone-850/40'
                 }`}
               >
                 {/* Date Number Header */}
@@ -322,10 +322,10 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
                   <span
                     className={`grid h-6 w-6 place-items-center rounded-full text-xs font-bold transition ${
                       isToday
-                        ? 'bg-ink text-white shadow-xs scale-105'
+                        ? 'bg-ink text-white shadow-xs scale-105 dark:bg-stone-100 dark:text-stone-900'
                         : inMonth
-                        ? 'text-stone-700'
-                        : 'text-stone-300'
+                        ? 'text-stone-700 dark:text-stone-200'
+                        : 'text-stone-300 dark:text-stone-600'
                     }`}
                   >
                     {format(day, 'd')}
@@ -345,7 +345,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
                       key={s.id}
                       onClick={(e) => e.stopPropagation()}
                       title={`${s.service_name} · ${currency(Number(s.cost), s.currency)} (${s.billing_cycle})`}
-                      className="group flex items-center justify-between truncate rounded-lg border border-violet-200/70 bg-violet-50/90 px-1.5 py-1 text-[10px] font-bold text-violet-900 shadow-2xs transition hover:bg-violet-100 hover:border-violet-300 active:scale-98"
+                      className="group flex items-center justify-between truncate rounded-lg border border-violet-200/70 bg-violet-50/90 px-1.5 py-1 text-[10px] font-bold text-violet-900 shadow-2xs transition hover:bg-violet-100 hover:border-violet-300 active:scale-98 dark:border-violet-900/60 dark:bg-violet-950/70 dark:text-violet-200 dark:hover:bg-violet-900/80"
                     >
                       <span className="truncate">{s.service_name}</span>
                       <span className="ml-1 shrink-0 font-extrabold opacity-90 text-[9px] sm:text-[10px]">
@@ -362,7 +362,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
                         e.stopPropagation();
                         setSelectedDay(day);
                       }}
-                      className="w-full text-left rounded-md bg-stone-100 px-1.5 py-0.5 text-[9px] font-extrabold text-stone-600 hover:bg-stone-200 transition"
+                      className="w-full text-left rounded-md bg-stone-100 dark:bg-stone-800 px-1.5 py-0.5 text-[9px] font-extrabold text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700 transition"
                     >
                       +{events.length - 2} more
                     </button>
@@ -375,13 +375,13 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
       </section>
 
       {/* Helpful Context Footer */}
-      <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-500">
+      <footer className="mt-5 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-500 dark:text-stone-400">
         <p className="leading-5">
           Calendar dates reflect recorded renewals and automatically forecast recurring monthly and yearly payments.
         </p>
-        <p className="font-semibold text-stone-400">
-          Tip: Use <kbd className="rounded border border-stone-200 bg-stone-100 px-1.5 py-0.5 text-[10px] font-mono">←</kbd> and{' '}
-          <kbd className="rounded border border-stone-200 bg-stone-100 px-1.5 py-0.5 text-[10px] font-mono">→</kbd> keys to switch months.
+        <p className="font-semibold text-stone-400 dark:text-stone-400">
+          Tip: Use <kbd className="rounded border border-stone-200 bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 px-1.5 py-0.5 text-[10px] font-mono">←</kbd> and{' '}
+          <kbd className="rounded border border-stone-200 bg-stone-100 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300 px-1.5 py-0.5 text-[10px] font-mono">→</kbd> keys to switch months.
         </p>
       </footer>
 
@@ -396,23 +396,23 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
           onClick={() => setSelectedDay(null)}
         >
           <div
-            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl border border-stone-200 animate-in zoom-in-95 duration-200"
+            className="w-full max-w-md rounded-2xl bg-white dark:bg-[#181816] text-stone-900 dark:text-stone-100 p-6 shadow-2xl border border-stone-200 dark:border-stone-800 animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-start justify-between border-b border-stone-100 pb-4">
+            <div className="flex items-start justify-between border-b border-stone-100 dark:border-stone-800 pb-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-violet uppercase tracking-wider">
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold text-violet dark:text-violet-400 uppercase tracking-wider">
                   <CalendarDays size={14} /> Renewals on this day
                 </span>
-                <h3 className="font-serif text-2xl font-bold text-ink mt-0.5">
+                <h3 className="font-serif text-2xl font-bold text-ink dark:text-stone-100 mt-0.5">
                   {format(selectedDay, 'EEEE, MMMM d, yyyy')}
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedDay(null)}
-                className="rounded-xl p-1.5 text-stone-400 hover:bg-stone-100 hover:text-ink transition"
+                className="rounded-xl p-1.5 text-stone-400 hover:bg-stone-100 hover:text-ink dark:hover:bg-stone-800 dark:hover:text-stone-200 transition"
                 aria-label="Close"
               >
                 <X size={18} />
@@ -429,16 +429,16 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
                 selectedDayEvents.map((sub) => (
                   <div
                     key={sub.id}
-                    className="flex items-center justify-between rounded-xl border border-stone-200/80 bg-stone-50/60 p-3.5 transition hover:border-violet-200 hover:bg-white"
+                    className="flex items-center justify-between rounded-xl border border-stone-200/80 bg-stone-50/60 p-3.5 transition hover:border-violet-200 hover:bg-white dark:border-stone-800 dark:bg-stone-900/50 dark:hover:border-violet-900/60 dark:hover:bg-stone-900"
                   >
                     <div>
                       <div className="flex items-center gap-2">
-                        <h4 className="font-bold text-sm text-ink">{sub.service_name}</h4>
-                        <span className="rounded-md bg-stone-200/70 px-1.5 py-0.5 text-[10px] font-bold text-stone-600 capitalize">
+                        <h4 className="font-bold text-sm text-ink dark:text-stone-100">{sub.service_name}</h4>
+                        <span className="rounded-md bg-stone-200/70 dark:bg-stone-800 px-1.5 py-0.5 text-[10px] font-bold text-stone-600 dark:text-stone-300 capitalize">
                           {categoryLabel(sub.category)}
                         </span>
                       </div>
-                      <p className="mt-1 text-xs text-stone-500 capitalize">
+                      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400 capitalize">
                         {sub.billing_cycle} plan
                         {sub.autopay_status && (
                           <span className="ml-2 font-semibold text-stone-400">
@@ -449,7 +449,7 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
                     </div>
 
                     <div className="flex flex-col items-end gap-1.5">
-                      <span className="text-base font-extrabold text-ink">
+                      <span className="text-base font-extrabold text-ink dark:text-stone-100">
                         {currency(Number(sub.cost), sub.currency)}
                       </span>
                       <div className="flex items-center gap-1.5">
@@ -458,14 +458,14 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
                             href={sub.renewal_url}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center gap-0.5 rounded-lg border border-stone-200 bg-white px-2 py-1 text-[11px] font-bold text-stone-700 hover:bg-stone-50 transition shadow-2xs"
+                            className="inline-flex items-center gap-0.5 rounded-lg border border-stone-200 bg-white px-2 py-1 text-[11px] font-bold text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700 transition shadow-2xs"
                           >
                             Pay <ExternalLink size={11} />
                           </a>
                         )}
                         <Link
                           href={`/subscriptions/${sub.id}`}
-                          className="rounded-lg bg-ink px-2.5 py-1 text-[11px] font-bold text-white hover:bg-black transition shadow-2xs"
+                          className="rounded-lg bg-ink px-2.5 py-1 text-[11px] font-bold text-white hover:bg-black dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white transition shadow-2xs"
                         >
                           Details
                         </Link>
@@ -478,9 +478,9 @@ export function CalendarView({ subscriptions }: CalendarViewProps) {
 
             {/* Modal Footer Summary */}
             {selectedDayEvents.length > 0 && (
-              <div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4 text-xs font-bold text-stone-600">
+              <div className="mt-5 flex items-center justify-between border-t border-stone-100 dark:border-stone-800 pt-4 text-xs font-bold text-stone-600 dark:text-stone-400">
                 <span>Total Due on this day:</span>
-                <span className="text-base font-extrabold text-ink">
+                <span className="text-base font-extrabold text-ink dark:text-stone-100">
                   {currency(
                     selectedDayEvents.reduce((sum, s) => sum + Number(s.cost), 0),
                     selectedDayEvents[0]?.currency || 'INR'

@@ -60,8 +60,8 @@ export function SmartInsights({
     insights.push({
       id: 'high-value',
       badge: 'Best Value',
-      badgeColor: 'bg-lime/20 text-lime border-lime/30',
-      icon: <Flame size={18} className="text-lime" />,
+      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      icon: <Flame size={18} className="text-emerald-400" />,
       title: `${mostUsedSub.service_name} is earning its place!`,
       description: `You logged ${mostUsedCount} uses this week. At roughly ${currency(costPerUse, mostUsedSub.currency)} per use, you’re getting exceptional value from this subscription.`,
       metricLabel: 'Usage rate',

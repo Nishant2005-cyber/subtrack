@@ -39,7 +39,7 @@ export default async function SpendingPage() {
         <header className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-sm text-stone-500 dark:text-stone-400">See the bigger picture</p>
-            <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl">Spending & Analytics</h1>
+            <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl text-ink dark:text-stone-100">Spending & Analytics</h1>
           </div>
           <div className="flex items-center gap-2">
             <ExportModal
@@ -72,7 +72,7 @@ export default async function SpendingPage() {
           </article>
           <article className="card p-5">
             <p className="text-xs font-bold text-stone-500 dark:text-stone-400">Biggest category</p>
-            <p className="mt-2 text-3xl font-bold tracking-tight">
+            <p className="mt-2 text-3xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
               {chartsByCurrency[primaryCurrency]?.length
                 ? categoryLabel(chartsByCurrency[primaryCurrency][0].name)
                 : '—'}

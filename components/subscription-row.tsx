@@ -170,7 +170,7 @@ export function SubscriptionRow({
                 `${subscription.service_name} reactivated!`
               )
             }
-            className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300 dark:hover:bg-emerald-900/60 disabled:opacity-50"
             title="Reactivate this subscription"
           >
             <RotateCcw size={13} />
@@ -203,10 +203,10 @@ export function SubscriptionRow({
                 onClick={() =>
                   run(() => logUsage(subscription.id), `Activity logged for ${subscription.service_name}!`)
                 }
-                className={`hidden rounded-lg px-2.5 py-2 text-xs font-bold sm:block ${
+                className={`hidden rounded-lg px-2.5 py-2 text-xs font-bold sm:block transition border ${
                   usedToday
-                    ? 'bg-lime text-ink dark:bg-lime/20 dark:text-lime-300'
-                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:hover:bg-stone-700'
+                    ? 'bg-lime/80 border-lime text-ink dark:bg-emerald-950/70 dark:border-emerald-700/60 dark:text-emerald-300'
+                    : 'border-stone-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:border-stone-700/70 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700'
                 } disabled:cursor-default`}
               >
                 {usedToday ? 'Logged today' : 'Used today'}
@@ -216,7 +216,7 @@ export function SubscriptionRow({
 
         <button
           onClick={() => setMenu(!menu)}
-          className="rounded-lg p-2 text-stone-500 hover:bg-stone-100 dark:text-stone-400 dark:hover:bg-stone-800"
+          className="rounded-lg p-2 text-stone-400 hover:bg-stone-100 hover:text-ink dark:hover:bg-stone-800 dark:hover:text-stone-100 transition"
           aria-label="More actions"
         >
           <MoreHorizontal size={18} />
@@ -230,7 +230,7 @@ export function SubscriptionRow({
               <Link
                 onClick={() => setMenu(false)}
                 href={`/subscriptions/${subscription.id}`}
-                className="block rounded-lg px-3 py-2 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800"
+                className="block rounded-lg px-3 py-2 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800/80 transition"
               >
                 View details
               </Link>
@@ -240,7 +240,7 @@ export function SubscriptionRow({
                   href={subscription.renewal_url}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800"
+                  className="flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800/80 transition"
                 >
                   Renew on site <ExternalLink size={12} />
                 </a>
@@ -261,7 +261,7 @@ export function SubscriptionRow({
                         : `${subscription.service_name} paused.`
                     );
                   }}
-                  className="block w-full rounded-lg px-3 py-2 text-left text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800"
+                  className="block w-full rounded-lg px-3 py-2 text-left text-xs font-semibold hover:bg-stone-50 dark:hover:bg-stone-800/80 transition"
                 >
                   {subscription.status === 'paused' ? 'Resume' : 'Pause'}
                 </button>
@@ -287,10 +287,10 @@ export function SubscriptionRow({
                       );
                   }
                 }}
-                className={`flex w-full items-center gap-1.5 rounded-lg px-3 py-2 text-left text-xs font-semibold ${
+                className={`flex w-full items-center gap-1.5 rounded-lg px-3 py-2 text-left text-xs font-semibold transition ${
                   isCanceled
-                    ? 'text-emerald-700 hover:bg-emerald-50'
-                    : 'text-rose-600 hover:bg-rose-50'
+                    ? 'text-emerald-700 hover:bg-emerald-50 dark:text-emerald-400 dark:hover:bg-emerald-950/40'
+                    : 'text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40'
                 }`}
               >
                 {isCanceled ? (
@@ -315,7 +315,7 @@ export function SubscriptionRow({
                       `${subscription.service_name} deleted.`
                     );
                 }}
-                className="flex w-full items-center gap-1.5 rounded-lg px-3 py-2 text-left text-xs font-semibold text-red-600 hover:bg-red-50 border-t mt-1 pt-1"
+                className="flex w-full items-center gap-1.5 rounded-lg px-3 py-2 text-left text-xs font-semibold text-rose-600 hover:bg-rose-50 dark:text-rose-400 dark:hover:bg-rose-950/40 border-t border-stone-100 dark:border-stone-800 mt-1 pt-1 transition"
               >
                 <Trash2 size={13} />
                 Delete

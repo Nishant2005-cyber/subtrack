@@ -17,23 +17,23 @@ export default async function SettingsPage() {
     <AppShell email={user.email ?? null}>
       <div className="mx-auto max-w-3xl px-5 py-7 sm:px-8 lg:px-10">
         <header className="mb-7">
-          <p className="flex items-center gap-1.5 text-sm text-stone-500">
-            <UserCheck size={14} className="text-violet" />
+          <p className="flex items-center gap-1.5 text-sm text-stone-500 dark:text-stone-400">
+            <UserCheck size={14} className="text-violet dark:text-violet-400" />
             Account & Preferences
           </p>
-          <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl">Account Settings</h1>
+          <h1 className="mt-1 font-serif text-3xl tracking-tight sm:text-4xl text-ink dark:text-stone-100">Account Settings</h1>
         </header>
 
         {/* Account Info & Logout Session Card */}
-        <section className="card mb-7 p-5 bg-white border border-stone-200 shadow-sm">
+        <section className="card mb-7 p-5">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-stone-100 text-stone-700">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300">
                 <Mail size={18} />
               </div>
               <div>
                 <p className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Signed in as</p>
-                <p className="text-sm font-bold text-ink mt-0.5">{user.email}</p>
+                <p className="text-sm font-bold text-ink dark:text-stone-100 mt-0.5">{user.email}</p>
               </div>
             </div>
             <LogoutButton />

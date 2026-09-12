@@ -32,7 +32,7 @@
     @apply inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold;
   }
   .field {
-    @apply mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm text-ink outline-none transition focus:border-violet focus:ring-4 focus:ring-violet/10 dark:border-stone-800 dark:bg-[#121210] dark:text-stone-100 dark:focus:border-violet/60;
+    @apply mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-stone-400 focus:border-violet focus:ring-4 focus:ring-violet/10 dark:border-stone-700 dark:bg-[#151513] dark:text-stone-100 dark:placeholder:text-stone-500 dark:focus:border-violet dark:focus:ring-4 dark:focus:ring-violet/20;
   }
   .action {
     @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition;

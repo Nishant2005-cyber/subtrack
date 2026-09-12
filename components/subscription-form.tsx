@@ -171,11 +171,11 @@ export function SubscriptionForm({ subscription }: { subscription?: Subscription
   });
 
   const button = subscription ? (
-    <button className="action border bg-white text-stone-700 hover:bg-stone-50">
+    <button className="action border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-700 dark:text-stone-200 hover:bg-stone-50 dark:hover:bg-stone-700 shadow-xs">
       <Pencil size={14} />Edit
     </button>
   ) : (
-    <button className="action bg-ink text-white hover:bg-black">
+    <button className="action bg-ink text-white hover:bg-black dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white shadow-xs">
       <Plus size={15} />Add subscription
     </button>
   );
@@ -191,7 +191,7 @@ export function SubscriptionForm({ subscription }: { subscription?: Subscription
             </button>
 
             <div className="mb-6 flex items-center gap-3">
-              <span className="grid h-10 w-10 place-items-center rounded-xl bg-lime dark:bg-lime/20 text-lime-950 dark:text-lime-400">
+              <span className="grid h-10 w-10 place-items-center rounded-xl bg-violet-100 text-violet-700 dark:bg-violet-950/60 dark:text-violet-300 dark:border dark:border-violet-800/40">
                 <CalendarDays size={19} />
               </span>
               <div>

@@ -93,8 +93,8 @@ export function AppLogo({
     <div className={`flex items-center gap-2.5 select-none ${className}`} title={title}>
       <SubTrackIcon size={pixelSize} title={title} />
       {showText && (
-        <span className={`font-sans text-ink ${textClasses}`}>
-          Sub<span className="text-stone-500">Track</span>
+        <span className={`font-sans text-ink dark:text-stone-100 ${textClasses}`}>
+          Sub<span className="text-stone-500 dark:text-stone-400">Track</span>
         </span>
       )}
     </div>

@@ -21,20 +21,20 @@ export function ReminderAlert({ id, title, body }: { id: string; title: string; 
   };
 
   return (
-    <div className="rounded-xl bg-orange-50 p-4 border border-orange-100">
+    <div className="rounded-xl bg-orange-50 dark:bg-orange-950/30 p-4 border border-orange-100 dark:border-orange-900/40">
       <div className="flex gap-3">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-orange-200 text-orange-800">
+        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-orange-200 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300">
           <Clock3 size={16} />
         </span>
         <div>
-          <p className="text-sm font-bold text-orange-950">{title}</p>
-          <p className="mt-1 text-xs leading-5 text-stone-600">{body}</p>
+          <p className="text-sm font-bold text-orange-950 dark:text-orange-200">{title}</p>
+          <p className="mt-1 text-xs leading-5 text-stone-600 dark:text-stone-300">{body}</p>
         </div>
       </div>
       <button
         disabled={pending}
         onClick={handleAcknowledge}
-        className="action mt-3 bg-white text-stone-700 shadow-sm hover:bg-stone-50 disabled:opacity-50 text-xs font-bold"
+        className="action mt-3 bg-white text-stone-700 shadow-sm hover:bg-stone-50 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700 border border-stone-200 dark:border-stone-700 disabled:opacity-50 text-xs font-bold"
       >
         <Check size={13} />
         {pending ? 'Saving…' : 'Got it'}

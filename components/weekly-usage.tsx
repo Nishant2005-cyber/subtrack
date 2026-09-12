@@ -32,13 +32,13 @@ export function WeeklyUsage({ usage }: { usage: UsageLog[] }) {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="panel-title">Usage this week</h2>
-          <p className="text-[11px] text-stone-500 mt-0.5">
+          <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-0.5">
             {totalWeekLogs === 0
               ? 'No activity logged yet this week'
               : `${totalWeekLogs} ${totalWeekLogs === 1 ? 'use' : 'uses'} recorded`}
           </p>
         </div>
-        <span className="pill bg-violet-50 text-violet font-semibold">Self-reported</span>
+        <span className="pill bg-violet-50 text-violet dark:bg-violet-950/60 dark:text-violet-300 font-semibold">Self-reported</span>
       </div>
 
       {/* 7-Day Dynamic Bar Chart */}
@@ -65,7 +65,7 @@ export function WeeklyUsage({ usage }: { usage: UsageLog[] }) {
                       : 'bg-violet/30'
                     : d.count > 0
                     ? 'bg-violet/80'
-                    : 'bg-stone-200'
+                    : 'bg-stone-200 dark:bg-stone-800'
                 } ${d.isFuture ? 'opacity-35' : ''}`}
                 style={{ height: `${heightPx}px` }}
               />
@@ -75,7 +75,7 @@ export function WeeklyUsage({ usage }: { usage: UsageLog[] }) {
                 className={`mt-2 block text-[10px] font-bold ${
                   d.isCurrentDay
                     ? 'text-violet underline decoration-2 underline-offset-2'
-                    : 'text-stone-400'
+                    : 'text-stone-400 dark:text-stone-400'
                 }`}
               >
                 {d.dayInitial}
@@ -85,8 +85,8 @@ export function WeeklyUsage({ usage }: { usage: UsageLog[] }) {
         })}
       </div>
 
-      <p className="mt-4 border-t border-stone-100 pt-3 text-xs text-stone-500">
-        Tap <b className="text-ink font-semibold">Used today</b> whenever you use a service to update this chart in real-time.
+      <p className="mt-4 border-t border-stone-100 dark:border-stone-800 pt-3 text-xs text-stone-500 dark:text-stone-400">
+        Tap <b className="text-ink dark:text-stone-100 font-semibold">Used today</b> whenever you use a service to update this chart in real-time.
       </p>
     </section>
   );

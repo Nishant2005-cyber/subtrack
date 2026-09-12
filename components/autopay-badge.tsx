@@ -18,22 +18,22 @@ const config: Record<
 > = {
   running: {
     label: 'Autopay Running',
-    pillClass: 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100',
-    dotClass: 'bg-emerald-500',
+    pillClass: 'bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100 dark:bg-emerald-950/40 dark:border-emerald-800/60 dark:text-emerald-300 dark:hover:bg-emerald-900/50',
+    dotClass: 'bg-emerald-500 dark:bg-emerald-400',
     title: 'Autopay Running',
     description: 'UPI / Card mandate is active. Renews automatically on due date.',
   },
   paused: {
     label: 'Autopay Paused',
-    pillClass: 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100',
-    dotClass: 'bg-amber-500',
+    pillClass: 'bg-amber-50 border-amber-200 text-amber-800 hover:bg-amber-100 dark:bg-amber-950/40 dark:border-amber-800/60 dark:text-amber-300 dark:hover:bg-amber-900/50',
+    dotClass: 'bg-amber-500 dark:bg-amber-400',
     title: 'Autopay Paused',
     description: 'Mandate is paused in your bank/UPI app. Will not auto-renew.',
   },
   deleted: {
     label: 'Autopay Deleted',
-    pillClass: 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100',
-    dotClass: 'bg-rose-500',
+    pillClass: 'bg-rose-50 border-rose-200 text-rose-800 hover:bg-rose-100 dark:bg-rose-950/40 dark:border-rose-800/60 dark:text-rose-300 dark:hover:bg-rose-900/50',
+    dotClass: 'bg-rose-500 dark:bg-rose-400',
     title: 'Autopay Deleted',
     description: 'Mandate was deleted/canceled. Subscription will expire.',
   },
@@ -112,11 +112,11 @@ export function AutopayBadge({
           />
           <div
             onClick={(e) => e.stopPropagation()}
-            className="absolute left-0 mt-1.5 w-64 rounded-xl border border-stone-200 bg-white p-1.5 shadow-xl z-40 text-left animate-in fade-in zoom-in-95 duration-100"
+            className="absolute left-0 mt-1.5 w-64 rounded-xl border border-stone-200 bg-white p-1.5 shadow-xl z-40 text-left animate-in fade-in zoom-in-95 duration-100 dark:border-stone-800 dark:bg-[#1c1c19] dark:text-stone-200"
           >
-            <div className="px-2 py-1 border-b border-stone-100 mb-1">
-              <p className="text-[11px] font-bold text-ink">Set Autopay Status</p>
-              <p className="text-[10px] text-stone-500">Track your payment mandate state</p>
+            <div className="px-2 py-1 border-b border-stone-100 dark:border-stone-800 mb-1">
+              <p className="text-[11px] font-bold text-ink dark:text-stone-100">Set Autopay Status</p>
+              <p className="text-[10px] text-stone-500 dark:text-stone-400">Track your payment mandate state</p>
             </div>
 
             {(['running', 'paused', 'deleted'] as AutopayStatus[]).map((key) => {
@@ -129,17 +129,17 @@ export function AutopayBadge({
                   onClick={() => handleSelect(key)}
                   className={`flex w-full items-start gap-2.5 rounded-lg px-2 py-1.5 text-left transition ${
                     isSelected
-                      ? 'bg-stone-100 text-ink font-bold'
-                      : 'text-stone-600 hover:bg-stone-50 hover:text-ink'
+                      ? 'bg-stone-100 text-ink font-bold dark:bg-stone-800 dark:text-stone-100'
+                      : 'text-stone-600 hover:bg-stone-50 hover:text-ink dark:text-stone-400 dark:hover:bg-stone-800/60 dark:hover:text-stone-200'
                   }`}
                 >
                   <span className={`mt-1 h-2 w-2 rounded-full shrink-0 ${item.dotClass}`} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold">{item.title}</span>
-                      {isSelected && <Check size={13} className="text-ink" />}
+                      {isSelected && <Check size={13} className="text-ink dark:text-stone-100" />}
                     </div>
-                    <p className="text-[10px] font-normal leading-4 text-stone-500">
+                    <p className="text-[10px] font-normal leading-4 text-stone-500 dark:text-stone-400">
                       {item.description}
                     </p>
                   </div>
