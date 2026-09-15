@@ -28,6 +28,7 @@ export function DetailActions({ id, status, usedToday }: { id: string; status: S
       <button
         disabled={pending || usedToday || status !== 'active'}
         onClick={() => run(() => logUsage(id), 'Activity logged for today!')}
+        aria-label={usedToday ? 'Activity already logged today' : 'Log usage for today'}
         className={`action ${
           usedToday
             ? 'bg-emerald-100 text-emerald-700 font-bold dark:bg-emerald-950/60 dark:text-emerald-300 dark:border dark:border-emerald-800/40'
@@ -35,7 +36,7 @@ export function DetailActions({ id, status, usedToday }: { id: string; status: S
         } disabled:opacity-70`}
       >
         <Check size={14} />
-        {usedToday ? 'Logged today' : 'Used today'}
+        {usedToday ? 'Logged today' : 'Log usage'}
       </button>
 
       {status !== 'canceled' && (

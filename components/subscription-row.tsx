@@ -15,7 +15,7 @@ import { useState, useTransition } from 'react';
 import { deleteSubscription, logUsage, setSubscriptionStatus } from '@/app/actions';
 import { useToast } from '@/components/toast';
 import { AutopayBadge } from '@/components/autopay-badge';
-import { categoryLabel, currency, dateLabel, dueLabel } from '@/lib/format';
+import { categoryLabel, currency, dateLabel, daysUntil, dueLabel } from '@/lib/format';
 import type { Subscription } from '@/lib/types';
 
 const color: Record<string, string> = {
@@ -129,8 +129,8 @@ export function SubscriptionRow({
       <div className="hidden text-right md:block">
         <div
           className={`text-xs font-bold ${
-            subscription.status === 'active' && dueLabel(subscription.next_renewal_date).includes('2')
-              ? 'text-red-600 dark:text-red-400'
+            subscription.status === 'active' && daysUntil(subscription.next_renewal_date) <= 2
+              ? 'text-rose-600 dark:text-rose-400'
               : isCanceled
               ? 'text-stone-400'
               : subscription.autopay_status === 'paused' && dueLabel(subscription.next_renewal_date).includes('Past')
@@ -203,13 +203,18 @@ export function SubscriptionRow({
                 onClick={() =>
                   run(() => logUsage(subscription.id), `Activity logged for ${subscription.service_name}!`)
                 }
+                aria-label={
+                  usedToday
+                    ? `Activity already logged today for ${subscription.service_name}`
+                    : `Log usage for ${subscription.service_name}`
+                }
                 className={`hidden rounded-lg px-2.5 py-2 text-xs font-bold sm:block transition border ${
                   usedToday
                     ? 'bg-lime/80 border-lime text-ink dark:bg-emerald-950/70 dark:border-emerald-700/60 dark:text-emerald-300'
                     : 'border-stone-200 bg-stone-100 text-stone-700 hover:bg-stone-200 dark:border-stone-700/70 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700'
                 } disabled:cursor-default`}
               >
-                {usedToday ? 'Logged today' : 'Used today'}
+                {usedToday ? 'Logged today' : 'Log usage'}
               </button>
           </>
         )}

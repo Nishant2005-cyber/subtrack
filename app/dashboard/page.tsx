@@ -227,7 +227,7 @@ function Stat({title,value,note,color,icon,href}:{title:string;value:string;note
       <span className={`grid h-9 w-9 place-items-center rounded-xl ${color}`}>{icon}</span>
       <p className="mt-4 text-xs font-bold text-stone-500 dark:text-stone-400">{title}</p>
       <p className="mt-1 text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">{value}</p>
-      <p className="mt-1 text-[11px] text-stone-500 dark:text-stone-400">{note}</p>
+      <p className="mt-1 text-xs text-stone-500 dark:text-stone-400">{note}</p>
     </article>
   );
   return href ? <Link href={href}>{card}</Link> : card;

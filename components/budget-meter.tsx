@@ -79,25 +79,33 @@ export function BudgetMeter({
 
         <div className="flex items-center gap-2">
           {/* Tab Pill */}
-          <div className="inline-flex rounded-lg border border-stone-200 dark:border-stone-800 p-0.5 bg-stone-50 dark:bg-stone-900 text-xs font-semibold">
+          <div
+            role="tablist"
+            aria-label="Budget period"
+            className="inline-flex rounded-lg border border-stone-200 dark:border-stone-800 p-0.5 bg-stone-100 dark:bg-stone-900 text-xs font-semibold"
+          >
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === 'monthly'}
               onClick={() => setActiveTab('monthly')}
               className={`rounded-md px-2.5 py-1 transition-all ${
                 activeTab === 'monthly'
-                  ? 'bg-white dark:bg-stone-800 text-ink dark:text-stone-100 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
+                  ? 'bg-ink text-white font-bold shadow-xs dark:bg-stone-100 dark:text-stone-900'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               Monthly
             </button>
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === 'annual'}
               onClick={() => setActiveTab('annual')}
               className={`rounded-md px-2.5 py-1 transition-all ${
                 activeTab === 'annual'
-                  ? 'bg-white dark:bg-stone-800 text-ink dark:text-stone-100 shadow-xs'
-                  : 'text-stone-500 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
+                  ? 'bg-ink text-white font-bold shadow-xs dark:bg-stone-100 dark:text-stone-900'
+                  : 'text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-200'
               }`}
             >
               Annual

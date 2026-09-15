@@ -58,7 +58,7 @@ export function WeeklyUsage({ usage }: { usage: UsageLog[] }) {
 
               {/* Bar */}
               <div
-                className={`w-5 rounded-t transition-all duration-300 ${
+                className={`w-5 rounded-t-md transition-all duration-300 ${
                   d.isCurrentDay
                     ? d.count > 0
                       ? 'bg-violet ring-2 ring-violet/30'
@@ -86,7 +86,7 @@ export function WeeklyUsage({ usage }: { usage: UsageLog[] }) {
       </div>
 
       <p className="mt-4 border-t border-stone-100 dark:border-stone-800 pt-3 text-xs text-stone-500 dark:text-stone-400">
-        Tap <b className="text-ink dark:text-stone-100 font-semibold">Used today</b> whenever you use a service to update this chart in real-time.
+        Tap <b className="text-ink dark:text-stone-100 font-semibold">Log usage</b> whenever you use a service to update this chart in real-time.
       </p>
     </section>
   );

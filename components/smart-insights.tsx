@@ -60,8 +60,8 @@ export function SmartInsights({
     insights.push({
       id: 'high-value',
       badge: 'Best Value',
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
-      icon: <Flame size={18} className="text-emerald-400" />,
+      badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40',
+      icon: <Flame size={18} className="text-emerald-600 dark:text-emerald-400" />,
       title: `${mostUsedSub.service_name} is earning its place!`,
       description: `You logged ${mostUsedCount} uses this week. At roughly ${currency(costPerUse, mostUsedSub.currency)} per use, you’re getting exceptional value from this subscription.`,
       metricLabel: 'Usage rate',
@@ -86,8 +86,8 @@ export function SmartInsights({
     insights.push({
       id: 'urgent-renewal',
       badge: 'Renewal Alert',
-      badgeColor: 'bg-amber-400/20 text-amber-300 border-amber-400/30',
-      icon: <AlertTriangle size={18} className="text-amber-300" />,
+      badgeColor: 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/40',
+      icon: <AlertTriangle size={18} className="text-amber-600 dark:text-amber-400" />,
       title: `${urgentSub.service_name} renews ${timeText}`,
       description: `Billed as ${currency(Number(urgentSub.cost), urgentSub.currency)} / ${urgentSub.billing_cycle}. ${
         urgentSub.autopay_status === 'paused'
@@ -112,8 +112,8 @@ export function SmartInsights({
     insights.push({
       id: 'idle-sub',
       badge: 'Savings Opportunity',
-      badgeColor: 'bg-rose-400/20 text-rose-300 border-rose-400/30',
-      icon: <TrendingDown size={18} className="text-rose-300" />,
+      badgeColor: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/40',
+      icon: <TrendingDown size={18} className="text-rose-600 dark:text-rose-400" />,
       title: `Haven’t used ${idleSub.service_name} recently?`,
       description: `You haven’t logged any activity on ${idleSub.service_name} this week. If you’re taking a break, consider pausing autopay to save ${currency(Number(idleSub.cost), idleSub.currency)}.`,
       metricLabel: 'Potential savings',
@@ -140,8 +140,8 @@ export function SmartInsights({
       insights.push({
         id: 'budget-breakdown',
         badge: 'Spend Insight',
-        badgeColor: 'bg-violet-400/20 text-violet-200 border-violet-400/30',
-        icon: <CircleDollarSign size={18} className="text-violet-300" />,
+        badgeColor: 'bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-950/60 dark:text-violet-300 dark:border-violet-800/40',
+        icon: <CircleDollarSign size={18} className="text-violet-600 dark:text-violet-400" />,
         title: `${topExpense.service_name} is your largest expense`,
         description: `It accounts for ${percent}% of your monthly subscription spend (${currency(topMonthlyCost)} of ${currency(totalMonthly)}). Check if you are maximizing its features.`,
         metricLabel: 'Share of spend',
@@ -157,14 +157,14 @@ export function SmartInsights({
   const current = insights[index % insights.length];
 
   return (
-    <section className="mt-7 relative overflow-hidden rounded-2xl bg-[#181a14] border border-white/10 p-5 text-white shadow-xl">
+    <section className="card mt-7 relative overflow-hidden p-5 border border-stone-200 dark:border-stone-800/80 bg-white dark:bg-[#181816] text-stone-900 dark:text-stone-100 shadow-sm">
       {/* Subtle background ambient glow */}
       <div className="absolute right-0 top-0 h-48 w-48 -mr-16 -mt-16 rounded-full bg-lime/10 blur-3xl pointer-events-none" />
 
       <div className="relative flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Left: Icon + Content */}
         <div className="flex items-start gap-3.5 min-w-0 flex-1">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-white/10 border border-white/15">
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-stone-100 dark:bg-stone-800/80 border border-stone-200 dark:border-stone-700/60">
             {current.icon}
           </div>
 
@@ -176,34 +176,34 @@ export function SmartInsights({
               >
                 {current.badge}
               </span>
-              <span className="text-[11px] font-semibold text-stone-400">
+              <span className="text-[11px] font-semibold text-stone-500 dark:text-stone-400">
                 Insight {((index % insights.length) + 1)} of {insights.length}
               </span>
             </div>
 
-            <h2 className="text-base font-bold text-white tracking-tight">{current.title}</h2>
-            <p className="mt-1 text-xs leading-5 text-stone-300 max-w-2xl">{current.description}</p>
+            <h2 className="text-base font-bold text-stone-900 dark:text-stone-100 tracking-tight">{current.title}</h2>
+            <p className="mt-1 text-xs leading-5 text-stone-600 dark:text-stone-400 max-w-2xl">{current.description}</p>
           </div>
         </div>
 
         {/* Right: Key Metric Chip + Actions */}
         <div className="flex flex-wrap items-center gap-3 sm:flex-col sm:items-end sm:gap-2 shrink-0">
           {/* Metric Highlight Box */}
-          <div className="hidden sm:block text-right px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-            <p className="text-[10px] font-medium text-stone-400 uppercase tracking-wider">
+          <div className="hidden sm:block text-right px-3 py-1.5 rounded-lg bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700/60">
+            <p className="text-[10px] font-medium text-stone-500 dark:text-stone-400 uppercase tracking-wider">
               {current.metricLabel}
             </p>
-            <p className="text-sm font-extrabold text-lime">{current.metricValue}</p>
+            <p className="text-sm font-extrabold text-stone-900 dark:text-stone-100">{current.metricValue}</p>
           </div>
 
           {/* Action Button & Carousel Controls */}
           <div className="flex items-center gap-2">
             {insights.length > 1 && (
-              <div className="flex items-center rounded-lg bg-white/10 p-0.5 border border-white/10">
+              <div className="flex items-center rounded-lg bg-stone-100 dark:bg-stone-800 p-0.5 border border-stone-200 dark:border-stone-700">
                 <button
                   type="button"
                   onClick={() => setIndex((prev) => (prev === 0 ? insights.length - 1 : prev - 1))}
-                  className="p-1 text-stone-300 hover:text-white rounded hover:bg-white/10 transition"
+                  className="p-1 text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 rounded-md hover:bg-white dark:hover:bg-stone-700 transition"
                   title="Previous insight"
                   aria-label="Previous insight"
                 >
@@ -212,7 +212,7 @@ export function SmartInsights({
                 <button
                   type="button"
                   onClick={() => setIndex((prev) => (prev + 1) % insights.length)}
-                  className="p-1 text-stone-300 hover:text-white rounded hover:bg-white/10 transition"
+                  className="p-1 text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 rounded-md hover:bg-white dark:hover:bg-stone-700 transition"
                   title="Next insight"
                   aria-label="Next insight"
                 >
@@ -224,7 +224,7 @@ export function SmartInsights({
             {current.actionHref && (
               <Link
                 href={current.actionHref}
-                className="inline-flex items-center gap-1 rounded-lg bg-lime px-3.5 py-1.5 text-xs font-bold text-ink shadow-sm hover:bg-[#cbf150] transition"
+                className="inline-flex items-center gap-1 rounded-lg bg-ink px-3.5 py-1.5 text-xs font-bold text-white shadow-sm hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white transition"
               >
                 <span>{current.actionText ?? 'Review'}</span>
                 <ArrowRight size={13} />

@@ -174,7 +174,7 @@ export function AppShell({
   const isCompact = isCollapsedMode || (isHoverMode && !isHovered);
 
   const renderNavLinks = (compact: boolean) => (
-    <nav className="grid gap-1.5">
+    <nav aria-label="Main navigation" className="grid gap-1.5">
       {links.map(({ href, label, icon: Icon }) => {
         const isActive = path === href;
         return (
@@ -183,7 +183,9 @@ export function AppShell({
             key={href}
             href={href}
             title={label}
-            className={`flex items-center rounded-xl text-sm font-semibold transition ${
+            aria-label={label}
+            aria-current={isActive ? 'page' : undefined}
+            className={`group relative flex items-center rounded-xl text-sm font-semibold transition ${
               compact
                 ? 'h-11 w-11 justify-center mx-auto'
                 : 'gap-3 px-3 py-2.5'
@@ -194,7 +196,12 @@ export function AppShell({
             }`}
           >
             <Icon size={19} className="shrink-0" />
-            {!compact && <span>{label}</span>}
+            <span className={compact ? 'sr-only' : ''}>{label}</span>
+            {compact && (
+              <span className="pointer-events-none absolute left-full ml-2.5 hidden rounded-md bg-stone-900 px-2 py-1 text-xs font-medium text-white shadow-md dark:bg-stone-100 dark:text-stone-900 group-hover:block z-50 whitespace-nowrap">
+                {label}
+              </span>
+            )}
           </Link>
         );
       })}

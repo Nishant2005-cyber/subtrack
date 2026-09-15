@@ -62,7 +62,7 @@ export function SubTrackIcon({
         alt="SubTrack"
         width={size}
         height={size}
-        className={`h-full w-full rounded-[10px] transition-opacity duration-300 ${logo.style}`}
+        className={`h-full w-full rounded-xl transition-opacity duration-300 ${logo.style}`}
       />
     </div>
   );

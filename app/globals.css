@@ -35,7 +35,22 @@
     @apply mt-1 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm text-ink outline-none transition placeholder:text-stone-400 focus:border-violet focus:ring-4 focus:ring-violet/10 dark:border-stone-700 dark:bg-[#151513] dark:text-stone-100 dark:placeholder:text-stone-500 dark:focus:border-violet dark:focus:ring-4 dark:focus:ring-violet/20;
   }
   .action {
-    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition;
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-bold transition disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .action-primary {
+    @apply action bg-ink text-white hover:bg-stone-800 dark:bg-stone-100 dark:text-stone-900 dark:hover:bg-white;
+  }
+  .action-secondary {
+    @apply action bg-stone-100 text-stone-700 hover:bg-stone-200 dark:bg-stone-800 dark:text-stone-200 dark:hover:bg-stone-700;
+  }
+  .action-outline {
+    @apply action border border-stone-200 bg-white text-stone-700 hover:bg-stone-50 dark:border-stone-700 dark:bg-transparent dark:text-stone-300 dark:hover:bg-stone-800;
+  }
+  .action-ghost {
+    @apply inline-flex items-center justify-center rounded-lg p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100 transition;
+  }
+  .action-danger {
+    @apply action border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60;
   }
 }
 
