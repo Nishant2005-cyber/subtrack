@@ -83,47 +83,35 @@
 }
 
 /* ─── View Transitions: circular ripple theme switch ─────────────────────────
-   ::view-transition-old = screenshot of the previous page state (old theme)
-   ::view-transition-new = live render of the new page state (new theme)
-   We suppress the default cross-fade and drive a clip-path circle instead.
+   Both light→dark and dark→light:
+     • NEW layer expands from the top-left corner (clip-path circle grows)
+     • OLD layer stays fully visible underneath
+   GPU-accelerated via will-change: clip-path
 ─────────────────────────────────────────────────────────────────────────── */
 
-/* Disable the default cross-fade animation on both layers */
+/* Suppress the default cross-fade on both layers */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 
-/* TO DARK: expand a circle on the NEW (dark) layer from the click origin */
-[data-vt='to-dark']::view-transition-new(root) {
-  clip-path: circle(0 at var(--vt-ripple-x, 0%) var(--vt-ripple-y, 0%));
-  animation: vt-ripple-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-[data-vt='to-dark']::view-transition-old(root) {
-  /* Keep old layer visible underneath while new expands */
-  clip-path: none;
-  z-index: 0;
+/* NEW layer: grows from top-left (shared by both directions) */
+[data-vt]::view-transition-new(root) {
+  clip-path: circle(0 at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px));
+  animation: vt-ripple-in 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  will-change: clip-path;
 }
 
-/* TO LIGHT: collapse a circle on the OLD (dark) layer from the click origin */
-[data-vt='to-light']::view-transition-old(root) {
-  clip-path: circle(var(--vt-ripple-r, 100vmax) at var(--vt-ripple-x, 100%) var(--vt-ripple-y, 100%));
-  animation: vt-ripple-out 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-[data-vt='to-light']::view-transition-new(root) {
-  /* New light layer sits underneath; old shrinks away */
+/* OLD layer: stays fully visible underneath the expanding new layer */
+[data-vt]::view-transition-old(root) {
   clip-path: none;
   z-index: 0;
+  will-change: auto;
 }
 
 @keyframes vt-ripple-in {
-  from { clip-path: circle(0 at var(--vt-ripple-x) var(--vt-ripple-y)); }
-  to   { clip-path: circle(var(--vt-ripple-r) at var(--vt-ripple-x) var(--vt-ripple-y)); }
-}
-
-@keyframes vt-ripple-out {
-  from { clip-path: circle(var(--vt-ripple-r) at var(--vt-ripple-x) var(--vt-ripple-y)); }
-  to   { clip-path: circle(0 at var(--vt-ripple-x) var(--vt-ripple-y)); }
+  from { clip-path: circle(0 at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px)); }
+  to   { clip-path: circle(var(--vt-ripple-r) at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px)); }
 }
 

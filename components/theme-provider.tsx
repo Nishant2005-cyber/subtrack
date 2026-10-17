@@ -150,21 +150,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     const root = document.documentElement;
 
-    if (nextResolved === 'dark') {
-      // light → dark: ripple expands from the top-left corner
-      const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
-      root.style.setProperty('--vt-ripple-x', '0px');
-      root.style.setProperty('--vt-ripple-y', '0px');
-      root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
-    } else {
-      // dark → light: ripple collapses into the bottom-right corner
-      const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
-      root.style.setProperty('--vt-ripple-x', `${window.innerWidth}px`);
-      root.style.setProperty('--vt-ripple-y', `${window.innerHeight}px`);
-      root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
-    }
+    // Both directions: new layer always expands from the top-left corner
+    const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
+    root.style.setProperty('--vt-ripple-x', '0px');
+    root.style.setProperty('--vt-ripple-y', '0px');
+    root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
 
-    // Direction flag read by CSS
+    // Direction flag kept for potential future differentiation
     root.setAttribute('data-vt', nextResolved === 'dark' ? 'to-dark' : 'to-light');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
