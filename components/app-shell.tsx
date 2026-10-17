@@ -14,6 +14,7 @@ import {
 import { useEffect, useState } from 'react';
 import { AppLogo } from '@/components/app-logo';
 import { ThemeToggle } from '@/components/theme-toggle';
+import { ProfileMenu } from '@/components/profile-menu';
 
 type SidebarMode = 'expanded' | 'collapsed' | 'hover';
 
@@ -222,7 +223,10 @@ export function AppShell({
         onClose={() => setMenuOpen(false)}
         isCompact={compact}
       />
-      <ThemeToggle variant="compact" />
+      <div className={`flex items-center ${compact ? 'flex-col gap-2' : 'gap-1.5'}`}>
+        <ThemeToggle variant="compact" />
+        <ProfileMenu email={email} />
+      </div>
     </div>
   );
 
@@ -269,6 +273,7 @@ export function AppShell({
         <AppLogo size="sm" href="/dashboard" />
         <div className="flex items-center gap-2">
           <ThemeToggle variant="compact" />
+          <ProfileMenu email={email} />
           <button
             onClick={() => setOpen(true)}
             aria-label="Open menu"
