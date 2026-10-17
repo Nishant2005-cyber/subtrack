@@ -17,7 +17,7 @@ export function advanceRenewalDate(currentDateStr: string, cycle: 'monthly' | 'y
 export async function getAppData() {
   const supabase = createClient(); const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { user: null, settings: null as UserSettings | null, subscriptions: [] as Subscription[], usage: [] as UsageLog[], notifications: [] as Notification[] };
-  const startDate = subDays(new Date(), 14).toISOString().slice(0, 10);
+  const startDate = subDays(new Date(), 30).toISOString().slice(0, 10);
   const [profileRes, subscriptions, usage, notifications] = await Promise.all([
     supabase.from('users').select('*').eq('id', user.id).maybeSingle(),
     supabase.from('subscriptions').select('*').order('next_renewal_date'),

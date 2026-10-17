@@ -83,54 +83,66 @@
 }
 
 /* ─── View Transitions: circular ripple theme switch ─────────────────────────
-   Both light→dark and dark→light:
-     • NEW layer expands from the top-left corner (clip-path circle grows)
-     • OLD layer stays fully visible underneath
-   GPU-accelerated via will-change: clip-path
+   • Light → Dark: new dark layer expands from top-left (0% 0%) across to bottom-right
+   • Dark → Light: new light layer expands from bottom-right (100% 100%) across to top-left
+   • Old layer stays static underneath (clip-path: none; z-index: 1)
+   • New layer sits on top (z-index: 2) and expands clip-path circle (0 → R)
 ─────────────────────────────────────────────────────────────────────────── */
 
-/* Suppress the default cross-fade on both layers */
+/* Suppress default cross-fade on both layers */
 ::view-transition-old(root),
 ::view-transition-new(root) {
   animation: none;
   mix-blend-mode: normal;
 }
 
-/* ── LIGHT → DARK: new dark layer expands from top-left ── */
+/* Old layer sits static underneath */
+::view-transition-old(root) {
+  clip-path: none;
+  z-index: 1;
+}
+
+/* New layer sits on top and expands */
+::view-transition-new(root) {
+  z-index: 2;
+  will-change: clip-path;
+}
+
+/* LIGHT → DARK: new dark layer expands from top-left (0, 0) */
 [data-vt='to-dark']::view-transition-new(root) {
   clip-path: circle(0 at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px));
-  animation: vt-expand 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  will-change: clip-path;
-}
-[data-vt='to-dark']::view-transition-old(root) {
-  /* Old light layer sits underneath — fully visible */
-  clip-path: none;
-  z-index: 0;
-  will-change: auto;
+  animation: vt-expand-tl 0.85s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* ── DARK → LIGHT: old dark layer shrinks into the bottom-right corner ── */
-[data-vt='to-light']::view-transition-old(root) {
-  clip-path: circle(var(--vt-ripple-r) at var(--vt-ripple-x, 100vw) var(--vt-ripple-y, 100vh));
-  animation: vt-collapse 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  will-change: clip-path;
-}
+/* DARK → LIGHT: new light layer expands from bottom-right (100%, 100%) */
 [data-vt='to-light']::view-transition-new(root) {
-  /* New light layer sits underneath — revealed as dark circle collapses into bottom-right */
-  clip-path: none;
-  z-index: 0;
-  will-change: auto;
+  clip-path: circle(0 at var(--vt-ripple-x, 100%) var(--vt-ripple-y, 100%));
+  animation: vt-expand-br 0.85s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
-/* Expand: 0 → full radius */
-@keyframes vt-expand {
-  from { clip-path: circle(0 at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px)); }
-  to   { clip-path: circle(var(--vt-ripple-r) at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px)); }
+@keyframes vt-expand-tl {
+  from {
+    clip-path: circle(0 at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px));
+  }
+  to {
+    clip-path: circle(var(--vt-ripple-r, 150vmax) at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px));
+  }
 }
 
-/* Collapse: full radius → 0 (exact reverse of expand) */
-@keyframes vt-collapse {
-  from { clip-path: circle(var(--vt-ripple-r) at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px)); }
-  to   { clip-path: circle(0 at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px)); }
+@keyframes vt-expand-br {
+  from {
+    clip-path: circle(0 at var(--vt-ripple-x, 100%) var(--vt-ripple-y, 100%));
+  }
+  to {
+    clip-path: circle(var(--vt-ripple-r, 150vmax) at var(--vt-ripple-x, 100%) var(--vt-ripple-y, 100%));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 

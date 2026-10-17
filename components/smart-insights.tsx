@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { format, subDays } from 'date-fns';
 import {
   AlertTriangle,
   ArrowRight,
@@ -40,32 +41,45 @@ export function SmartInsights({
   const active = subscriptions.filter((s) => s.status === 'active');
   const [index, setIndex] = useState(0);
 
-  // Map usage counts per subscription
-  const usageCountMap = new Map<string, number>();
-  usage.forEach((log) => {
-    usageCountMap.set(log.subscription_id, (usageCountMap.get(log.subscription_id) ?? 0) + 1);
+  // Filter usage logs to the past 30 days (monthly billing cycle)
+  const now = new Date();
+  const past30DaysIso = format(subDays(now, 29), 'yyyy-MM-dd');
+  const monthLogs = usage.filter((log) => log.logged_date >= past30DaysIso);
+
+  // Map distinct active days logged per subscription in the past 30 days (0 to 30)
+  const monthlyDaysMap = new Map<string, number>();
+  const loggedDatesBySub = new Map<string, Set<string>>();
+  monthLogs.forEach((log) => {
+    if (!loggedDatesBySub.has(log.subscription_id)) {
+      loggedDatesBySub.set(log.subscription_id, new Set());
+    }
+    loggedDatesBySub.get(log.subscription_id)!.add(log.logged_date);
+  });
+  loggedDatesBySub.forEach((dates, subId) => {
+    monthlyDaysMap.set(subId, Math.min(dates.size, 30));
   });
 
   const insights: InsightItem[] = [];
 
-  // 1. High Value Champion (used 3+ times this week)
+  // 1. High Value Champion (used 3+ days this month)
   const mostUsedSub = [...active].sort(
-    (a, b) => (usageCountMap.get(b.id) ?? 0) - (usageCountMap.get(a.id) ?? 0)
+    (a, b) => (monthlyDaysMap.get(b.id) ?? 0) - (monthlyDaysMap.get(a.id) ?? 0)
   )[0];
-  const mostUsedCount = mostUsedSub ? (usageCountMap.get(mostUsedSub.id) ?? 0) : 0;
+  const mostUsedCount = mostUsedSub ? (monthlyDaysMap.get(mostUsedSub.id) ?? 0) : 0;
 
   if (mostUsedSub && mostUsedCount >= 3) {
-    const cost = Number(mostUsedSub.cost);
-    const costPerUse = Math.round((cost / 4) / Math.max(mostUsedCount, 1));
+    const rawCost = Number(mostUsedSub.cost);
+    const mCost = monthlyCost(rawCost, mostUsedSub.billing_cycle);
+    const costPerUse = Math.max(1, Math.round(mCost / mostUsedCount));
     insights.push({
       id: 'high-value',
       badge: 'Best Value',
       badgeColor: 'bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800/40',
       icon: <Flame size={18} className="text-emerald-600 dark:text-emerald-400" />,
       title: `${mostUsedSub.service_name} is earning its place!`,
-      description: `You logged ${mostUsedCount} uses this week. At roughly ${currency(costPerUse, mostUsedSub.currency)} per use, you’re getting exceptional value from this subscription.`,
+      description: `You logged ${mostUsedCount} uses this month. At roughly ${currency(costPerUse, mostUsedSub.currency)} per use, you’re getting exceptional value from this subscription.`,
       metricLabel: 'Usage rate',
-      metricValue: `${mostUsedCount} days / week`,
+      metricValue: `${mostUsedCount} days / mo`,
       actionText: 'View details',
       actionHref: `/subscriptions/${mostUsedSub.id}`,
     });
@@ -103,9 +117,9 @@ export function SmartInsights({
     });
   }
 
-  // 3. Idle / Underused Subscription (0 uses this week)
+  // 3. Idle / Underused Subscription (0 uses this month)
   const idleSub = active.find(
-    (s) => (usageCountMap.get(s.id) ?? 0) === 0 && Number(s.cost) > 0
+    (s) => (monthlyDaysMap.get(s.id) ?? 0) === 0 && Number(s.cost) > 0
   );
 
   if (idleSub) {
@@ -115,7 +129,7 @@ export function SmartInsights({
       badgeColor: 'bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800/40',
       icon: <TrendingDown size={18} className="text-rose-600 dark:text-rose-400" />,
       title: `Haven’t used ${idleSub.service_name} recently?`,
-      description: `You haven’t logged any activity on ${idleSub.service_name} this week. If you’re taking a break, consider pausing autopay to save ${currency(Number(idleSub.cost), idleSub.currency)}.`,
+      description: `You haven’t logged any activity on ${idleSub.service_name} this month. If you’re taking a break, consider pausing autopay to save ${currency(Number(idleSub.cost), idleSub.currency)}.`,
       metricLabel: 'Potential savings',
       metricValue: `${currency(Number(idleSub.cost), idleSub.currency)} / ${idleSub.billing_cycle === 'yearly' ? 'yr' : 'mo'}`,
       actionText: 'Manage autopay',

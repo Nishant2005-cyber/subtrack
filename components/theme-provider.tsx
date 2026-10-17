@@ -115,8 +115,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   /**
    * Toggle light ↔ dark with a circular ripple reveal:
-   *   light → dark : expands from the top-left corner
-   *   dark  → light : collapses into the bottom-right corner
+   *   light → dark : new dark layer expands from the top-left corner across to bottom-right
+   *   dark  → light : new light layer expands from the bottom-right corner across to top-left
    * Falls back to an instant switch when View Transitions are unsupported
    * or the user prefers reduced motion.
    */
@@ -156,13 +156,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       root.style.setProperty('--vt-ripple-x', '0px');
       root.style.setProperty('--vt-ripple-y', '0px');
     } else {
-      // dark → light: old dark layer collapses INTO bottom-right
+      // dark → light: new light layer expands FROM bottom-right
       root.style.setProperty('--vt-ripple-x', `${window.innerWidth}px`);
       root.style.setProperty('--vt-ripple-y', `${window.innerHeight}px`);
     }
     root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
 
-    // Direction flag kept for potential future differentiation
+    // Direction flag for CSS selectors
     root.setAttribute('data-vt', nextResolved === 'dark' ? 'to-dark' : 'to-light');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
