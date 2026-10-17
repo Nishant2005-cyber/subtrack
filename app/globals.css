@@ -97,8 +97,8 @@
 
 /* TO DARK: expand a circle on the NEW (dark) layer from the click origin */
 [data-vt='to-dark']::view-transition-new(root) {
-  clip-path: circle(0 at var(--vt-ripple-x, 50%) var(--vt-ripple-y, 50%));
-  animation: vt-ripple-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  clip-path: circle(0 at var(--vt-ripple-x, 0%) var(--vt-ripple-y, 0%));
+  animation: vt-ripple-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 [data-vt='to-dark']::view-transition-old(root) {
   /* Keep old layer visible underneath while new expands */
@@ -108,8 +108,8 @@
 
 /* TO LIGHT: collapse a circle on the OLD (dark) layer from the click origin */
 [data-vt='to-light']::view-transition-old(root) {
-  clip-path: circle(var(--vt-ripple-r, 100vmax) at var(--vt-ripple-x, 50%) var(--vt-ripple-y, 50%));
-  animation: vt-ripple-out 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  clip-path: circle(var(--vt-ripple-r, 100vmax) at var(--vt-ripple-x, 100%) var(--vt-ripple-y, 100%));
+  animation: vt-ripple-out 0.75s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 [data-vt='to-light']::view-transition-new(root) {
   /* New light layer sits underneath; old shrinks away */

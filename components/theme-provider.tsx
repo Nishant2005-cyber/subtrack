@@ -114,12 +114,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   /**
-   * Toggle light ↔ dark.
-   * When `origin` is provided and the browser supports View Transitions,
-   * a circular clip-path ripple expands from the click point.
-   * Falls back to an instant switch for reduced-motion or unsupported browsers.
+   * Toggle light ↔ dark with a circular ripple reveal:
+   *   light → dark : expands from the top-left corner
+   *   dark  → light : collapses into the bottom-right corner
+   * Falls back to an instant switch when View Transitions are unsupported
+   * or the user prefers reduced motion.
    */
-  const toggleTheme = (origin?: { x: number; y: number }) => {
+  const toggleTheme = (_origin?: { x: number; y: number }) => {
     const nextResolved: 'light' | 'dark' = resolvedTheme === 'dark' ? 'light' : 'dark';
     const nextTheme: Theme = nextResolved; // always explicit, not 'system'
 
@@ -137,7 +138,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // Instant fallback
     if (
-      !origin ||
       prefersReduced ||
       typeof document === 'undefined' ||
       !('startViewTransition' in document)
@@ -148,18 +148,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const { x, y } = origin;
-    // Max radius so the circle covers the entire viewport
-    const endRadius = Math.hypot(
-      Math.max(x, window.innerWidth - x),
-      Math.max(y, window.innerHeight - y),
-    );
-
     const root = document.documentElement;
-    root.style.setProperty('--vt-ripple-x', `${x}px`);
-    root.style.setProperty('--vt-ripple-y', `${y}px`);
-    root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
-    // Direction flag read by CSS (to-dark = new is dark, clip new; to-light = new is light, clip old)
+
+    if (nextResolved === 'dark') {
+      // light → dark: ripple expands from the top-left corner
+      const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
+      root.style.setProperty('--vt-ripple-x', '0px');
+      root.style.setProperty('--vt-ripple-y', '0px');
+      root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
+    } else {
+      // dark → light: ripple collapses into the bottom-right corner
+      const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
+      root.style.setProperty('--vt-ripple-x', `${window.innerWidth}px`);
+      root.style.setProperty('--vt-ripple-y', `${window.innerHeight}px`);
+      root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
+    }
+
+    // Direction flag read by CSS
     root.setAttribute('data-vt', nextResolved === 'dark' ? 'to-dark' : 'to-light');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
