@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Laptop, Moon, Sun } from 'lucide-react';
 import { useTheme, type Theme } from '@/components/theme-provider';
 
@@ -11,8 +11,9 @@ export function ThemeToggle({
   variant?: 'compact' | 'segmented';
   className?: string;
 }) {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const btnRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -60,22 +61,19 @@ export function ThemeToggle({
     );
   }
 
-  // Compact toggle for Sidebar / Mobile: strictly switches between Light and Dark only!
-  const toggleLightDark = () => {
-    if (resolvedTheme === 'dark') {
-      setTheme('light');
-    } else {
-      setTheme('dark');
-    }
-  };
-
+  // Compact toggle (Sidebar / Mobile) — triggers ripple animation from click position
   const isDark = resolvedTheme === 'dark';
   const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
 
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    toggleTheme({ x: e.clientX, y: e.clientY });
+  };
+
   return (
     <button
+      ref={btnRef}
       type="button"
-      onClick={toggleLightDark}
+      onClick={handleClick}
       title={label}
       aria-label={label}
       className={`relative flex h-8 w-8 items-center justify-center rounded-lg border border-stone-300/80 bg-white/80 text-stone-600 shadow-sm transition hover:bg-white hover:text-ink dark:border-stone-700/80 dark:bg-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-700 dark:hover:text-white ${className}`}

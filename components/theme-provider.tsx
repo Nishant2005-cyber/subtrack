@@ -8,16 +8,31 @@ interface ThemeContextType {
   theme: Theme;
   resolvedTheme: 'light' | 'dark';
   setTheme: (theme: Theme) => void;
+  /** Toggle light↔dark with an optional ripple origin (page-relative px coordinates). */
+  toggleTheme: (origin?: { x: number; y: number }) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: 'light',
   resolvedTheme: 'light',
   setTheme: () => {},
+  toggleTheme: () => {},
 });
 
 export function useTheme() {
   return useContext(ThemeContext);
+}
+
+/** Apply or remove `dark` class instantly (used inside the VT callback). */
+function applyDarkClass(dark: boolean) {
+  const root = document.documentElement;
+  if (dark) {
+    root.classList.add('dark');
+    root.style.colorScheme = 'dark';
+  } else {
+    root.classList.remove('dark');
+    root.style.colorScheme = 'light';
+  }
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -48,13 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     function applyEffectiveTheme(effective: 'light' | 'dark') {
       setResolvedTheme(effective);
-      if (effective === 'dark') {
-        root.classList.add('dark');
-        root.style.colorScheme = 'dark';
-      } else {
-        root.classList.remove('dark');
-        root.style.colorScheme = 'light';
-      }
+      applyDarkClass(effective === 'dark');
     }
 
     if (theme === 'light') {
@@ -104,8 +113,69 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  /**
+   * Toggle light ↔ dark.
+   * When `origin` is provided and the browser supports View Transitions,
+   * a circular clip-path ripple expands from the click point.
+   * Falls back to an instant switch for reduced-motion or unsupported browsers.
+   */
+  const toggleTheme = (origin?: { x: number; y: number }) => {
+    const nextResolved: 'light' | 'dark' = resolvedTheme === 'dark' ? 'light' : 'dark';
+    const nextTheme: Theme = nextResolved; // always explicit, not 'system'
+
+    // Persist immediately
+    try {
+      localStorage.setItem('theme', nextTheme);
+      document.cookie = `theme=${nextTheme}; path=/; max-age=31536000; SameSite=Lax`;
+    } catch {
+      // ignore
+    }
+
+    const prefersReduced =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Instant fallback
+    if (
+      !origin ||
+      prefersReduced ||
+      typeof document === 'undefined' ||
+      !('startViewTransition' in document)
+    ) {
+      applyDarkClass(nextResolved === 'dark');
+      setResolvedTheme(nextResolved);
+      setThemeState(nextTheme);
+      return;
+    }
+
+    const { x, y } = origin;
+    // Max radius so the circle covers the entire viewport
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y),
+    );
+
+    const root = document.documentElement;
+    root.style.setProperty('--vt-ripple-x', `${x}px`);
+    root.style.setProperty('--vt-ripple-y', `${y}px`);
+    root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
+    // Direction flag read by CSS (to-dark = new is dark, clip new; to-light = new is light, clip old)
+    root.setAttribute('data-vt', nextResolved === 'dark' ? 'to-dark' : 'to-light');
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (document as any)
+      .startViewTransition(() => {
+        applyDarkClass(nextResolved === 'dark');
+        setResolvedTheme(nextResolved);
+        setThemeState(nextTheme);
+      })
+      .finished.finally(() => {
+        root.removeAttribute('data-vt');
+      });
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
