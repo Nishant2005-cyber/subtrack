@@ -10,6 +10,7 @@ import { WeeklyUsage } from '@/components/weekly-usage';
 import { SmartInsights } from '@/components/smart-insights';
 import { BudgetMeter } from '@/components/budget-meter';
 import { ExportModal } from '@/components/export-modal';
+import { ProfileMenu } from '@/components/profile-menu';
 import { getAppData } from '@/lib/data';
 import { currency, daysUntil, getTodayDateStr, monthlyCost } from '@/lib/format';
 
@@ -63,13 +64,20 @@ export default async function Dashboard() {
             <p className="mb-1 text-sm text-stone-500 dark:text-stone-400">Your subscription home</p>
             <Greeting name={user.user_metadata?.full_name} />
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <ExportModal
               subscriptions={subscriptions}
               monthlySpend={primaryTotal}
               currencyCode={primaryCurrency}
             />
             <SubscriptionForm />
+            <div className="h-5 w-px bg-stone-300/80 dark:bg-stone-700/80 mx-0.5 hidden sm:block" />
+            <ProfileMenu
+              email={user.email ?? null}
+              name={user.user_metadata?.full_name}
+              size="md"
+              align="bottom"
+            />
           </div>
         </header>
 

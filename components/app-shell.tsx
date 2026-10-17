@@ -225,7 +225,7 @@ export function AppShell({
       />
       <div className={`flex items-center ${compact ? 'flex-col gap-2' : 'gap-1.5'}`}>
         <ThemeToggle variant="compact" />
-        <ProfileMenu email={email} />
+        <ProfileMenu email={email} align="top" />
       </div>
     </div>
   );
