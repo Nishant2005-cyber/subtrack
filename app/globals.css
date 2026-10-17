@@ -109,14 +109,14 @@
   will-change: auto;
 }
 
-/* ── DARK → LIGHT: old dark layer shrinks back into top-left ── */
+/* ── DARK → LIGHT: old dark layer shrinks into the bottom-right corner ── */
 [data-vt='to-light']::view-transition-old(root) {
-  clip-path: circle(var(--vt-ripple-r) at var(--vt-ripple-x, 0px) var(--vt-ripple-y, 0px));
+  clip-path: circle(var(--vt-ripple-r) at var(--vt-ripple-x, 100vw) var(--vt-ripple-y, 100vh));
   animation: vt-collapse 0.9s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   will-change: clip-path;
 }
 [data-vt='to-light']::view-transition-new(root) {
-  /* New light layer sits underneath — revealed as dark circle shrinks */
+  /* New light layer sits underneath — revealed as dark circle collapses into bottom-right */
   clip-path: none;
   z-index: 0;
   will-change: auto;

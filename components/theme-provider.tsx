@@ -149,11 +149,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
 
     const root = document.documentElement;
-
-    // Both directions: new layer always expands from the top-left corner
     const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
-    root.style.setProperty('--vt-ripple-x', '0px');
-    root.style.setProperty('--vt-ripple-y', '0px');
+
+    if (nextResolved === 'dark') {
+      // light → dark: new dark layer expands FROM top-left
+      root.style.setProperty('--vt-ripple-x', '0px');
+      root.style.setProperty('--vt-ripple-y', '0px');
+    } else {
+      // dark → light: old dark layer collapses INTO bottom-right
+      root.style.setProperty('--vt-ripple-x', `${window.innerWidth}px`);
+      root.style.setProperty('--vt-ripple-y', `${window.innerHeight}px`);
+    }
     root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
 
     // Direction flag kept for potential future differentiation
