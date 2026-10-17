@@ -103,55 +103,60 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [theme, mounted]);
 
+  /**
+   * Set theme (light, dark, or system) with a smooth circular ripple transition:
+   *   switching to dark  : expands from the top-left corner across to bottom-right
+   *   switching to light : expands from the bottom-right corner across to top-left
+   * Falls back to an instant switch when View Transitions are unsupported,
+   * user prefers reduced motion, or target effective theme already matches current.
+   */
   const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
+    // Determine target effective theme ('light' | 'dark')
+    let targetResolved: 'light' | 'dark';
+    if (newTheme === 'system') {
+      const systemIsDark =
+        typeof window !== 'undefined' &&
+        window.matchMedia &&
+        window.matchMedia('(prefers-color-scheme: dark)').matches;
+      targetResolved = systemIsDark ? 'dark' : 'light';
+    } else {
+      targetResolved = newTheme;
+    }
+
+    // Persist preference immediately
     try {
       localStorage.setItem('theme', newTheme);
       document.cookie = `theme=${newTheme}; path=/; max-age=31536000; SameSite=Lax`;
     } catch {
       // Ignore storage errors
     }
-  };
 
-  /**
-   * Toggle light ↔ dark with a circular ripple reveal:
-   *   light → dark : new dark layer expands from the top-left corner across to bottom-right
-   *   dark  → light : new light layer expands from the bottom-right corner across to top-left
-   * Falls back to an instant switch when View Transitions are unsupported
-   * or the user prefers reduced motion.
-   */
-  const toggleTheme = (_origin?: { x: number; y: number }) => {
-    const nextResolved: 'light' | 'dark' = resolvedTheme === 'dark' ? 'light' : 'dark';
-    const nextTheme: Theme = nextResolved; // always explicit, not 'system'
-
-    // Persist immediately
-    try {
-      localStorage.setItem('theme', nextTheme);
-      document.cookie = `theme=${nextTheme}; path=/; max-age=31536000; SameSite=Lax`;
-    } catch {
-      // ignore
+    // If effective theme isn't changing, update preference state without visual transition
+    if (targetResolved === resolvedTheme) {
+      setThemeState(newTheme);
+      return;
     }
 
     const prefersReduced =
       typeof window !== 'undefined' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Instant fallback
+    // Instant fallback if View Transitions are unsupported or reduced motion is preferred
     if (
       prefersReduced ||
       typeof document === 'undefined' ||
       !('startViewTransition' in document)
     ) {
-      applyDarkClass(nextResolved === 'dark');
-      setResolvedTheme(nextResolved);
-      setThemeState(nextTheme);
+      applyDarkClass(targetResolved === 'dark');
+      setResolvedTheme(targetResolved);
+      setThemeState(newTheme);
       return;
     }
 
     const root = document.documentElement;
     const endRadius = Math.hypot(window.innerWidth, window.innerHeight);
 
-    if (nextResolved === 'dark') {
+    if (targetResolved === 'dark') {
       // light → dark: new dark layer expands FROM top-left
       root.style.setProperty('--vt-ripple-x', '0px');
       root.style.setProperty('--vt-ripple-y', '0px');
@@ -163,18 +168,26 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     root.style.setProperty('--vt-ripple-r', `${endRadius}px`);
 
     // Direction flag for CSS selectors
-    root.setAttribute('data-vt', nextResolved === 'dark' ? 'to-dark' : 'to-light');
+    root.setAttribute('data-vt', targetResolved === 'dark' ? 'to-dark' : 'to-light');
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (document as any)
       .startViewTransition(() => {
-        applyDarkClass(nextResolved === 'dark');
-        setResolvedTheme(nextResolved);
-        setThemeState(nextTheme);
+        applyDarkClass(targetResolved === 'dark');
+        setResolvedTheme(targetResolved);
+        setThemeState(newTheme);
       })
       .finished.finally(() => {
         root.removeAttribute('data-vt');
       });
+  };
+
+  /**
+   * Toggle between light ↔ dark mode using the same animated transition.
+   */
+  const toggleTheme = (_origin?: { x: number; y: number }) => {
+    const nextTheme: Theme = resolvedTheme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
   };
 
   return (
